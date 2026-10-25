@@ -13,6 +13,7 @@ RepoRadar is a full-stack developer tool built on the MERN stack that enables de
 - **Blast Radius & Impact Analysis**: Select any file to compute its immediate callers, direct dependencies, and transitive dependents across the entire repository.
 - **Cycle & Anomaly Detection**: Depth-first search (DFS) with recursion stack identifies circular dependencies (`A ➔ B ➔ A`), isolated entry points, and unresolved path aliases.
 - **Three-Panel Code Explorer**: Browse hierarchical file trees, view syntax-highlighted source code with line numbers, and inspect incoming/outgoing dependencies with one-click navigation.
+- **User Authentication**: Secure JWT-based authentication with bcrypt password hashing, dedicated Login and Register pages, session persistence, and authorization headers.
 - **Persistent Platform Dashboard & History**: Saved repository analyses and platform statistics persisted in MongoDB Atlas (with seamless in-memory fallback for offline testing).
 - **Production-Ready Architecture**: Centralized error handling, input validation with SSRF protection, rate limiting, and responsive dark developer theme.
 

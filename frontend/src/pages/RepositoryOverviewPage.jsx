@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useOutletContext, useNavigate, Link } from 'react-router-dom';
 import {
   FileCode2,
@@ -13,13 +13,24 @@ import {
   GitFork,
   PackageCheck,
   RotateCw,
-  ExternalLink
+  ExternalLink,
+  ShieldCheck,
+  Download,
+  Star,
+  GitCompare,
+  FileText,
+  Code2
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
+import { calculateHealthScore } from '../utils/healthCalculator';
+import { downloadMarkdownAudit, downloadJsonGraph } from '../utils/auditExporter';
+import { useAuth } from '../context/AuthContext';
 
 export function RepositoryOverviewPage() {
   const { repo, refreshRepo } = useOutletContext();
   const navigate = useNavigate();
+  const { togglePin, isPinned } = useAuth();
+  const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
 
   if (!repo) return null;
 
@@ -27,7 +38,9 @@ export function RepositoryOverviewPage() {
   const languages = repo.languages || [];
   const directorySummary = repo.directorySummary || [];
   const parseErrors = repo.parseErrors || [];
-  const cyclesCount = repo.cyclesCount || 0;
+  const cyclesCount = repo.summary?.cycleCount || repo.cycles?.length || 0;
+  const health = calculateHealthScore(repo);
+  const pinned = isPinned(repo.id);
 
   return (
     <div className="space-y-6">
@@ -43,16 +56,78 @@ export function RepositoryOverviewPage() {
                 Analysis Complete
               </span>
             </div>
-            <h2 className="text-xl sm:text-2xl font-bold text-radar-text font-mono">
-              {repo.owner} / {repo.name}
-            </h2>
+            <div className="flex items-center gap-3">
+              <h2 className="text-xl sm:text-2xl font-bold text-radar-text font-mono">
+                {repo.owner} / {repo.name}
+              </h2>
+              {/* Star / Pin Button */}
+              <button
+                type="button"
+                onClick={() => togglePin(repo.id)}
+                className={`p-1.5 rounded-xl border transition-all ${
+                  pinned
+                    ? 'bg-amber-500/20 border-amber-500/40 text-amber-400 shadow-sm'
+                    : 'bg-radar-surface border-radar-border text-radar-textSubtle hover:text-amber-400 hover:border-amber-500/30'
+                }`}
+                title={pinned ? 'Unpin repository' : 'Pin to favorites'}
+              >
+                <Star className={`w-4 h-4 ${pinned ? 'fill-amber-400' : ''}`} />
+              </button>
+            </div>
             <p className="text-xs sm:text-sm text-radar-textMuted max-w-2xl leading-relaxed">
               {repo.description || 'No description provided by repository owner.'}
             </p>
           </div>
 
-          {/* Quick jump actions */}
+          {/* Quick jump & Export actions */}
           <div className="flex flex-wrap items-center gap-2.5">
+            {/* Export Audit Dropdown */}
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                leftIcon={<Download className="w-4 h-4 text-emerald-400" />}
+                onClick={() => setIsExportMenuOpen((prev) => !prev)}
+              >
+                Export Audit
+              </Button>
+
+              {isExportMenuOpen && (
+                <div className="absolute right-0 mt-2 w-56 bg-radar-card border border-radar-border rounded-xl shadow-card-dark p-1.5 text-xs z-30 animate-in fade-in zoom-in-95 duration-150">
+                  <button
+                    onClick={() => {
+                      setIsExportMenuOpen(false);
+                      downloadMarkdownAudit(repo);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-radar-text hover:text-white hover:bg-radar-surface rounded-lg transition-colors text-left"
+                  >
+                    <FileText className="w-3.5 h-3.5 text-indigo-400" />
+                    <span>Markdown Report (.md)</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      setIsExportMenuOpen(false);
+                      downloadJsonGraph(repo);
+                    }}
+                    className="w-full flex items-center gap-2 px-3 py-2 text-radar-text hover:text-white hover:bg-radar-surface rounded-lg transition-colors text-left"
+                  >
+                    <Code2 className="w-3.5 h-3.5 text-cyan-400" />
+                    <span>Raw Graph JSON (.json)</span>
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Compare with another repo */}
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<GitCompare className="w-4 h-4 text-indigo-400" />}
+              onClick={() => navigate(`/compare?a=${repo.id}`)}
+            >
+              Compare
+            </Button>
+
             <Button
               variant="primary"
               size="sm"
@@ -78,6 +153,65 @@ export function RepositoryOverviewPage() {
               Deep Analysis
             </Button>
           </div>
+        </div>
+      </div>
+
+      {/* Feature 1: Architectural Health Score & Technical Debt Meter */}
+      <div className={`p-6 bg-radar-card border ${health.borderColor} rounded-2xl shadow-card-dark relative overflow-hidden`}>
+        <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+          <div className="flex items-center gap-5">
+            {/* Health Grade Stamp */}
+            <div className={`w-20 h-20 rounded-2xl ${health.bgColor} border ${health.borderColor} flex flex-col items-center justify-center shrink-0 shadow-inner`}>
+              <span className={`text-3xl font-black font-mono ${health.color}`}>
+                {health.grade}
+              </span>
+              <span className="text-[10px] uppercase font-semibold tracking-wider text-radar-textSubtle mt-0.5">
+                Grade
+              </span>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <ShieldCheck className={`w-5 h-5 ${health.color}`} />
+                <h3 className="text-lg font-bold text-radar-text">
+                  Architectural Health Score: <span className={health.color}>{health.score} / 100</span>
+                </h3>
+              </div>
+              <p className="text-xs text-radar-textMuted max-w-xl">
+                Evaluated from AST cycle loops, internal dependency coupling ratio ({health.density} edges/file), module modularity, and syntax integrity.
+              </p>
+            </div>
+          </div>
+
+          {/* Sub-Metric Gauges */}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 w-full md:w-auto text-xs font-mono">
+            <div className="p-2.5 bg-radar-surface/60 rounded-xl border border-radar-border/40">
+              <span className="text-[10px] text-radar-textSubtle block">Acyclic Score</span>
+              <span className={`font-bold ${health.cyclicityScore === 100 ? 'text-emerald-400' : 'text-amber-400'}`}>
+                {health.cyclicityScore}%
+              </span>
+            </div>
+            <div className="p-2.5 bg-radar-surface/60 rounded-xl border border-radar-border/40">
+              <span className="text-[10px] text-radar-textSubtle block">Coupling Ratio</span>
+              <span className="font-bold text-cyan-400">{health.density}x</span>
+            </div>
+            <div className="p-2.5 bg-radar-surface/60 rounded-xl border border-radar-border/40 col-span-2 sm:col-span-1">
+              <span className="text-[10px] text-radar-textSubtle block">Cleanliness</span>
+              <span className="font-bold text-purple-400">{health.cleanlinessScore}%</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Health Key Insights */}
+        <div className="mt-4 pt-4 border-t border-radar-border/40 grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+          {health.insights.map((insight, idx) => (
+            <div key={idx} className="flex items-start gap-2 text-slate-300">
+              <span className={insight.type === 'positive' ? 'text-emerald-400' : 'text-amber-400'}>
+                {insight.type === 'positive' ? '✓' : '⚠️'}
+              </span>
+              <span>{insight.text}</span>
+            </div>
+          ))}
         </div>
       </div>
 

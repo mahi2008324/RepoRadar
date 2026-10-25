@@ -71,6 +71,37 @@ export function AuthProvider({ children }) {
     localStorage.removeItem('reporadar_user');
   };
 
+  const togglePin = async (repoId) => {
+    if (!token || !user) return false;
+    try {
+      const res = await api.post(`/auth/pins/${repoId}`);
+      if (res.success && Array.isArray(res.pinnedRepositories)) {
+        const updatedUser = {
+          ...user,
+          pinnedRepositories: res.pinnedRepositories
+        };
+        setUser(updatedUser);
+        localStorage.setItem('reporadar_user', JSON.stringify(updatedUser));
+        return true;
+      }
+    } catch {
+      // Fallback local toggle
+      const current = user.pinnedRepositories || [];
+      const updated = current.includes(repoId)
+        ? current.filter(id => id !== repoId)
+        : [...current, repoId];
+      const updatedUser = { ...user, pinnedRepositories: updated };
+      setUser(updatedUser);
+      localStorage.setItem('reporadar_user', JSON.stringify(updatedUser));
+    }
+    return false;
+  };
+
+  const isPinned = (repoId) => {
+    if (!user || !user.pinnedRepositories) return false;
+    return user.pinnedRepositories.includes(repoId);
+  };
+
   const value = {
     user,
     token,
@@ -78,7 +109,10 @@ export function AuthProvider({ children }) {
     loading,
     login,
     register,
-    logout
+    logout,
+    pinnedRepos: user?.pinnedRepositories || [],
+    togglePin,
+    isPinned
   };
 
   return (

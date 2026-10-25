@@ -15,9 +15,13 @@ import {
   Star,
   Activity,
   Calendar,
-  Layers
+  Layers,
+  GitCompare,
+  Sparkles
 } from 'lucide-react';
 import { repositoryService } from '../services/repositoryService';
+import { useAuth } from '../context/AuthContext';
+import { calculateHealthScore } from '../utils/healthCalculator';
 import { Button } from '../components/common/Button';
 import { Modal } from '../components/common/Modal';
 import { CardSkeleton } from '../components/common/Skeleton';
@@ -27,6 +31,8 @@ import { ErrorState } from '../components/common/ErrorState';
 export function DashboardPage() {
   const navigate = useNavigate();
   const location = useLocation();
+  const { togglePin, isPinned, pinnedRepos } = useAuth();
+  const [activeTab, setActiveTab] = useState('all'); // 'all' | 'pinned'
 
   const [repos, setRepos] = useState([]);
   const [stats, setStats] = useState({
@@ -132,13 +138,24 @@ export function DashboardPage() {
               Workspace of repositories analyzed and persisted by RepoRadar.
             </p>
           </div>
-          <Button
-            variant="primary"
-            leftIcon={<Plus className="w-4 h-4" />}
-            onClick={() => setIsModalOpen(true)}
-          >
-            Analyze Repository
-          </Button>
+          <div className="flex items-center gap-2.5">
+            <Button
+              variant="outline"
+              size="md"
+              leftIcon={<GitCompare className="w-4 h-4 text-indigo-400" />}
+              onClick={() => navigate('/compare')}
+            >
+              Compare Codebases
+            </Button>
+            <Button
+              variant="primary"
+              size="md"
+              leftIcon={<Plus className="w-4 h-4" />}
+              onClick={() => setIsModalOpen(true)}
+            >
+              Analyze Repository
+            </Button>
+          </div>
         </div>
 
         {/* Real Summary Metric Cards */}
@@ -180,8 +197,34 @@ export function DashboardPage() {
           </div>
         </div>
 
-        {/* Filter and Search Bar */}
-        <div className="flex items-center justify-between gap-4">
+        {/* Filter, Tabs, and Search Bar */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4 pt-2">
+          {/* Catalog Tabs */}
+          <div className="flex items-center gap-1.5 p-1 bg-radar-card border border-radar-border rounded-xl">
+            <button
+              onClick={() => setActiveTab('all')}
+              className={`px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                activeTab === 'all'
+                  ? 'bg-indigo-600 text-white shadow-sm'
+                  : 'text-radar-textMuted hover:text-radar-text hover:bg-radar-surface/60'
+              }`}
+            >
+              All Repositories ({repos.length})
+            </button>
+            <button
+              onClick={() => setActiveTab('pinned')}
+              className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                activeTab === 'pinned'
+                  ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
+                  : 'text-radar-textMuted hover:text-amber-300 hover:bg-radar-surface/60'
+              }`}
+            >
+              <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
+              <span>Pinned ({repos.filter(r => isPinned(r.id)).length})</span>
+            </button>
+          </div>
+
+          {/* Search Input */}
           <div className="relative w-full max-w-md">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-radar-textSubtle" />
             <input
@@ -189,7 +232,7 @@ export function DashboardPage() {
               placeholder="Search by owner, repository, or language..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-radar-surface border border-radar-border rounded-lg pl-9 pr-4 py-2 text-xs sm:text-sm text-radar-text placeholder-radar-textSubtle outline-none focus:border-indigo-500"
+              className="w-full bg-radar-surface border border-radar-border rounded-xl pl-9 pr-4 py-2 text-xs sm:text-sm text-radar-text placeholder-radar-textSubtle outline-none focus:border-indigo-500 transition-all"
             />
           </div>
         </div>
@@ -214,53 +257,106 @@ export function DashboardPage() {
             actionText="Analyze a Repository"
             onAction={() => setIsModalOpen(true)}
           />
+        ) : repos.filter(r => activeTab === 'all' || isPinned(r.id)).length === 0 ? (
+          <div className="p-8 text-center bg-radar-card border border-radar-border rounded-2xl max-w-md mx-auto my-6">
+            <Star className="w-8 h-8 text-amber-400/40 mx-auto mb-3" />
+            <h3 className="text-sm font-semibold text-radar-text">No Pinned Repositories</h3>
+            <p className="text-xs text-radar-textMuted mt-1 mb-4">
+              Click the star icon on any repository card to pin your favorite projects here.
+            </p>
+            <Button variant="outline" size="sm" onClick={() => setActiveTab('all')}>
+              Show All Repositories
+            </Button>
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {repos.map((repo) => (
-              <div
-                key={repo.id}
-                onClick={() => navigate(`/repositories/${repo.id}`)}
-                className="p-5 bg-radar-card hover:bg-radar-cardHover border border-radar-border hover:border-indigo-500/50 rounded-xl shadow-card-dark transition-all duration-200 cursor-pointer flex flex-col justify-between group"
-              >
-                <div>
-                  {/* Card Header */}
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="min-w-0">
-                      <p className="text-xs text-radar-textSubtle font-mono truncate">
-                        {repo.owner}
+            {repos
+              .filter(r => {
+                const matchesQuery =
+                  !searchQuery ||
+                  r.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  r.owner?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                  r.primaryLanguage?.toLowerCase().includes(searchQuery.toLowerCase());
+                const matchesTab = activeTab === 'all' || isPinned(r.id);
+                return matchesQuery && matchesTab;
+              })
+              .map((repo) => {
+                const health = calculateHealthScore(repo);
+                const pinned = isPinned(repo.id);
+
+                return (
+                  <div
+                    key={repo.id}
+                    onClick={() => navigate(`/repositories/${repo.id}`)}
+                    className="p-5 bg-radar-card hover:bg-radar-cardHover border border-radar-border hover:border-indigo-500/50 rounded-2xl shadow-card-dark transition-all duration-200 cursor-pointer flex flex-col justify-between group relative"
+                  >
+                    <div>
+                      {/* Card Header */}
+                      <div className="flex items-start justify-between gap-2 mb-2">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs text-radar-textSubtle font-mono truncate">
+                            {repo.owner}
+                          </p>
+                          <h3 className="text-base font-semibold text-radar-text truncate group-hover:text-indigo-300 transition-colors">
+                            {repo.name}
+                          </h3>
+                        </div>
+
+                        {/* Top Actions: Pin + Language */}
+                        <div className="flex items-center gap-1.5 shrink-0" onClick={(e) => e.stopPropagation()}>
+                          <button
+                            type="button"
+                            onClick={() => togglePin(repo.id)}
+                            className={`p-1.5 rounded-lg border transition-all ${
+                              pinned
+                                ? 'bg-amber-500/20 border-amber-500/40 text-amber-400 shadow-sm'
+                                : 'bg-radar-surface/80 border-radar-border/80 text-radar-textSubtle hover:text-amber-400 hover:border-amber-500/30'
+                            }`}
+                            title={pinned ? 'Unpin repository' : 'Pin to favorites'}
+                          >
+                            <Star className={`w-3.5 h-3.5 ${pinned ? 'fill-amber-400' : ''}`} />
+                          </button>
+
+                          {repo.primaryLanguage && (
+                            <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-950/60 text-indigo-300 border border-indigo-800/40">
+                              {repo.primaryLanguage}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Description */}
+                      <p className="text-xs text-radar-textMuted line-clamp-2 mb-4 leading-relaxed">
+                        {repo.description || 'No description provided.'}
                       </p>
-                      <h3 className="text-base font-semibold text-radar-text truncate group-hover:text-indigo-300 transition-colors">
-                        {repo.name}
-                      </h3>
-                    </div>
-                    {repo.primaryLanguage && (
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-indigo-950/60 text-indigo-300 border border-indigo-800/40 shrink-0">
-                        {repo.primaryLanguage}
-                      </span>
-                    )}
-                  </div>
 
-                  {/* Description */}
-                  <p className="text-xs text-radar-textMuted line-clamp-2 mb-4 leading-relaxed">
-                    {repo.description || 'No description provided.'}
-                  </p>
+                      {/* Health Grade & Quality Badge */}
+                      <div className="flex items-center justify-between gap-2 mb-3">
+                        <span className={`inline-flex items-center gap-1.5 text-[10px] font-bold font-mono px-2.5 py-1 rounded-lg border ${health.bgColor} ${health.color} ${health.borderColor}`}>
+                          <ShieldCheck className="w-3.5 h-3.5" />
+                          <span>Grade {health.grade} ({health.score}/100)</span>
+                        </span>
+                        <span className="text-[10px] font-mono text-radar-textSubtle">
+                          {health.density} edges/file
+                        </span>
+                      </div>
 
-                  {/* Metrics Badges */}
-                  <div className="grid grid-cols-2 gap-2 p-2.5 bg-radar-surface/80 rounded-lg border border-radar-border/60 text-xs font-mono mb-4">
-                    <div>
-                      <span className="text-[10px] text-radar-textSubtle block">Source Files</span>
-                      <span className="text-slate-200 font-semibold">
-                        {repo.summary?.analyzedFilesCount || 0}
-                      </span>
+                      {/* Metrics Badges */}
+                      <div className="grid grid-cols-2 gap-2 p-2.5 bg-radar-surface/80 rounded-xl border border-radar-border/60 text-xs font-mono mb-4">
+                        <div>
+                          <span className="text-[10px] text-radar-textSubtle block">Source Files</span>
+                          <span className="text-slate-200 font-semibold">
+                            {repo.summary?.analyzedFilesCount || 0}
+                          </span>
+                        </div>
+                        <div>
+                          <span className="text-[10px] text-radar-textSubtle block">Dependencies</span>
+                          <span className="text-cyan-400 font-semibold">
+                            {repo.summary?.internalEdgesCount || 0}
+                          </span>
+                        </div>
+                      </div>
                     </div>
-                    <div>
-                      <span className="text-[10px] text-radar-textSubtle block">Dependencies</span>
-                      <span className="text-cyan-400 font-semibold">
-                        {repo.summary?.internalEdgesCount || 0}
-                      </span>
-                    </div>
-                  </div>
-                </div>
 
                 {/* Footer and Actions */}
                 <div className="pt-3 border-t border-radar-border/60 flex items-center justify-between text-xs text-radar-textSubtle">
@@ -290,8 +386,9 @@ export function DashboardPage() {
                   </div>
                 </div>
               </div>
-            ))}
-          </div>
+            );
+          })}
+        </div>
         )}
       </div>
 

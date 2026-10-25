@@ -21,7 +21,10 @@ const UserSchema = new mongoose.Schema({
     type: String,
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters']
-  }
+  },
+  pinnedRepositories: [{
+    type: String
+  }]
 }, {
   timestamps: true
 });
@@ -72,6 +75,7 @@ class MemoryUserStore {
       name,
       email: email.toLowerCase(),
       password: hashedPassword,
+      pinnedRepositories: [],
       createdAt: new Date(),
       async comparePassword(candidate) {
         return bcrypt.compare(candidate, this.password);
@@ -112,6 +116,39 @@ export const User = {
       return memoryUserStoreInstance.create({ name, email, password });
     }
     return MongooseUserModel.create({ name, email, password });
+  },
+
+  async togglePin(userId, repoId) {
+    if (!repoId) return [];
+
+    if (!isMongooseActive()) {
+      const user = await memoryUserStoreInstance.findById(userId);
+      if (!user) return [];
+      if (!user.pinnedRepositories) user.pinnedRepositories = [];
+      const idx = user.pinnedRepositories.indexOf(repoId);
+      if (idx > -1) {
+        user.pinnedRepositories.splice(idx, 1);
+      } else {
+        user.pinnedRepositories.push(repoId);
+      }
+      return user.pinnedRepositories;
+    }
+
+    if (!mongoose.isValidObjectId(userId)) return [];
+
+    const user = await MongooseUserModel.findById(userId);
+    if (!user) return [];
+
+    if (!user.pinnedRepositories) user.pinnedRepositories = [];
+    const idx = user.pinnedRepositories.indexOf(repoId);
+    if (idx > -1) {
+      user.pinnedRepositories.splice(idx, 1);
+    } else {
+      user.pinnedRepositories.push(repoId);
+    }
+
+    await user.save();
+    return user.pinnedRepositories;
   }
 };
 

@@ -121,4 +121,47 @@ describe('Authentication API Endpoints', () => {
     const data = await res.json();
     assert.strictEqual(data.success, false);
   });
+
+  it('POST /api/auth/pin and GET /api/auth/pins should toggle and retrieve pinned repos', async () => {
+    const fakeRepoId = 'repo_xyz_123';
+
+    // 1. Pin repo
+    const pinRes = await fetch(`${baseUrl}/api/auth/pin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`
+      },
+      body: JSON.stringify({ repositoryId: fakeRepoId })
+    });
+    assert.strictEqual(pinRes.status, 200);
+    const pinData = await pinRes.json();
+    assert.strictEqual(pinData.success, true);
+    assert.strictEqual(pinData.isPinned, true);
+    assert.ok(pinData.pinnedRepositories.includes(fakeRepoId));
+
+    // 2. Fetch pins
+    const getPinsRes = await fetch(`${baseUrl}/api/auth/pins`, {
+      headers: { Authorization: `Bearer ${authToken}` }
+    });
+    assert.strictEqual(getPinsRes.status, 200);
+    const getPinsData = await getPinsRes.json();
+    assert.strictEqual(getPinsData.success, true);
+    assert.ok(getPinsData.pinnedRepositories.includes(fakeRepoId));
+
+    // 3. Unpin repo
+    const unpinRes = await fetch(`${baseUrl}/api/auth/pin`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${authToken}`
+      },
+      body: JSON.stringify({ repositoryId: fakeRepoId })
+    });
+    assert.strictEqual(unpinRes.status, 200);
+    const unpinData = await unpinRes.json();
+    assert.strictEqual(unpinData.success, true);
+    assert.strictEqual(unpinData.isPinned, false);
+    assert.strictEqual(unpinData.pinnedRepositories.includes(fakeRepoId), false);
+  });
 });

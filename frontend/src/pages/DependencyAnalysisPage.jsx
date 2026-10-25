@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useOutletContext, useSearchParams, useNavigate } from 'react-router-dom';
 import {
   Activity,
@@ -32,6 +32,45 @@ export function DependencyAnalysisPage() {
   const [selectedFileForImpact, setSelectedFileForImpact] = useState('');
   const [impactData, setImpactData] = useState(null);
   const [loadingImpact, setLoadingImpact] = useState(false);
+
+  // External Package Explorer state
+  const [packageQuery, setPackageQuery] = useState('');
+  const [selectedPackage, setSelectedPackage] = useState(null);
+
+  // Map each external package to all internal files that import it
+  const packageUsageMap = useMemo(() => {
+    const map = {};
+    if (!repo) return map;
+
+    (repo.externalPackages || []).forEach(pkg => {
+      map[pkg] = [];
+    });
+
+    (repo.files || []).forEach(file => {
+      (file.externalImports || []).forEach(imp => {
+        const pkg = imp.packageName || imp.rawSource;
+        if (pkg) {
+          if (!map[pkg]) map[pkg] = [];
+          if (!map[pkg].some(f => f.path === file.path)) {
+            map[pkg].push({
+              path: file.path,
+              language: file.language,
+              rawSource: imp.rawSource
+            });
+          }
+        }
+      });
+    });
+
+    return map;
+  }, [repo]);
+
+  const filteredPackages = useMemo(() => {
+    const pkgs = repo?.externalPackages || [];
+    if (!packageQuery.trim()) return pkgs;
+    const q = packageQuery.toLowerCase();
+    return pkgs.filter(p => p.toLowerCase().includes(q));
+  }, [repo, packageQuery]);
 
   useEffect(() => {
     if (!repo) return;
@@ -383,6 +422,109 @@ export function DependencyAnalysisPage() {
                 {file.path}
               </div>
             ))}
+          </div>
+        )}
+      </section>
+
+      {/* Feature 4: External Package Usage Explorer */}
+      <section className="p-5 bg-radar-card border border-radar-border rounded-2xl shadow-card-dark">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 bg-purple-950/60 text-purple-400 rounded-lg border border-purple-800/40">
+                <Layers className="w-4 h-4" />
+              </span>
+              <h3 className="text-sm font-semibold text-radar-text">
+                External Package Usage Explorer ({filteredPackages.length} packages)
+              </h3>
+            </div>
+            <p className="text-xs text-radar-textMuted mt-1">
+              Click any 3rd-party npm dependency to inspect which internal source files import it.
+            </p>
+          </div>
+
+          {/* Search Package Input */}
+          <div className="relative w-full sm:w-64">
+            <input
+              type="text"
+              placeholder="Filter package name..."
+              value={packageQuery}
+              onChange={(e) => setPackageQuery(e.target.value)}
+              className="w-full bg-radar-surface border border-radar-border rounded-xl px-3 py-1.5 text-xs text-radar-text placeholder-radar-textSubtle outline-none focus:border-indigo-500 font-mono"
+            />
+          </div>
+        </div>
+
+        {/* Packages Pills Grid */}
+        <div className="flex flex-wrap gap-2 mb-4 max-h-40 overflow-y-auto pr-1">
+          {filteredPackages.length === 0 ? (
+            <p className="text-xs text-radar-textMuted italic">No external packages match your search filter.</p>
+          ) : (
+            filteredPackages.map((pkg) => {
+              const users = packageUsageMap[pkg] || [];
+              const isSelected = selectedPackage === pkg;
+              return (
+                <button
+                  key={pkg}
+                  type="button"
+                  onClick={() => setSelectedPackage(isSelected ? null : pkg)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-mono transition-all border ${
+                    isSelected
+                      ? 'bg-indigo-600 text-white border-indigo-500 shadow-glow-primary'
+                      : 'bg-radar-surface hover:bg-slate-800 text-slate-300 hover:text-white border-radar-border'
+                  }`}
+                >
+                  <span className="font-semibold">{pkg}</span>
+                  <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${isSelected ? 'bg-indigo-700 text-indigo-100' : 'bg-radar-card text-radar-textSubtle'}`}>
+                    {users.length} {users.length === 1 ? 'file' : 'files'}
+                  </span>
+                </button>
+              );
+            })
+          )}
+        </div>
+
+        {/* Selected Package File Inspector Drawer */}
+        {selectedPackage && (
+          <div className="p-4 bg-radar-surface/80 border border-indigo-500/40 rounded-xl text-xs animate-in fade-in duration-200">
+            <div className="flex items-center justify-between mb-3 border-b border-radar-border/40 pb-2">
+              <span className="font-semibold text-radar-text flex items-center gap-2">
+                <span className="text-indigo-400 font-mono font-bold">`{selectedPackage}`</span>
+                <span className="text-radar-textMuted font-normal">imported by {(packageUsageMap[selectedPackage] || []).length} file(s)</span>
+              </span>
+              <button
+                onClick={() => setSelectedPackage(null)}
+                className="text-[11px] text-radar-textSubtle hover:text-radar-text"
+              >
+                Close Inspector ✕
+              </button>
+            </div>
+
+            <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+              {(packageUsageMap[selectedPackage] || []).length === 0 ? (
+                <p className="text-xs text-radar-textMuted italic">Used implicitly in project configuration or indirect entrypoints.</p>
+              ) : (
+                (packageUsageMap[selectedPackage] || []).map((file, idx) => (
+                  <div
+                    key={idx}
+                    className="flex items-center justify-between p-2 rounded-lg bg-radar-card border border-radar-border/80 hover:border-indigo-500/40 transition-colors"
+                  >
+                    <div className="min-w-0 pr-3">
+                      <p className="font-mono text-slate-200 truncate">{file.path}</p>
+                      <span className="text-[10px] text-radar-textSubtle">{file.language}</span>
+                    </div>
+
+                    <button
+                      onClick={() => navigate(`/repositories/${repo.id}/explorer?file=${encodeURIComponent(file.path)}`)}
+                      className="px-2.5 py-1 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-lg text-[11px] font-medium flex items-center gap-1 shrink-0 transition-colors"
+                    >
+                      <span>Inspect Code</span>
+                      <ArrowRight className="w-3 h-3" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
           </div>
         )}
       </section>

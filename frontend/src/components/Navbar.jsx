@@ -11,7 +11,8 @@ import {
   ChevronDown,
   User,
   ShieldCheck,
-  Sparkles
+  Sparkles,
+  GitCompare
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './common/Button';
@@ -28,6 +29,7 @@ export function Navbar() {
 
   const navLinks = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
+    { name: 'Compare', path: '/compare', icon: GitCompare },
     { name: 'History', path: '/history', icon: History }
   ];
 

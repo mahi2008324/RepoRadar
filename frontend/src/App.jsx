@@ -16,6 +16,7 @@ import { RepositoryOverview } from './pages/RepositoryOverview';
 import { CodeExplorer } from './pages/CodeExplorer';
 import { DependencyGraph } from './pages/DependencyGraph';
 import { DependencyAnalysis } from './pages/DependencyAnalysis';
+import { Compare } from './pages/Compare';
 import { NotFound } from './pages/NotFound';
 
 export default function App() {
@@ -68,6 +69,14 @@ export default function App() {
               element={
                 <ProtectedRoute>
                   <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/compare"
+              element={
+                <ProtectedRoute>
+                  <Compare />
                 </ProtectedRoute>
               }
             />

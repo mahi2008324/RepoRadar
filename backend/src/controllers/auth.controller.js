@@ -84,7 +84,8 @@ export const authController = {
         user: {
           id: user._id || user.id,
           name: user.name,
-          email: user.email
+          email: user.email,
+          pinnedRepositories: user.pinnedRepositories || []
         }
       });
     } catch (err) {
@@ -100,6 +101,57 @@ export const authController = {
       success: true,
       user: req.user
     });
+  },
+
+  /**
+   * POST /api/auth/pins/:repoId or POST /api/auth/pin
+   * Toggle pinned repository for authenticated user
+   */
+  async togglePin(req, res, next) {
+    try {
+      const repoId = req.params.repoId || req.body.repositoryId || req.body.repoId;
+      const userId = req.user?.id || req.user?._id;
+
+      if (!userId) {
+        return res.status(401).json({ success: false, message: 'Authentication required.' });
+      }
+
+      if (!repoId) {
+        return res.status(400).json({ success: false, message: 'Repository ID is required.' });
+      }
+
+      const updatedPins = await User.togglePin(userId, repoId);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Pinned repositories updated.',
+        isPinned: updatedPins.includes(repoId),
+        pinnedRepositories: updatedPins
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * GET /api/auth/pins
+   * Fetch pinned repository IDs for authenticated user
+   */
+  async getPins(req, res, next) {
+    try {
+      const userId = req.user?.id || req.user?._id;
+      if (!userId) {
+        return res.status(401).json({ success: false, message: 'Authentication required.' });
+      }
+
+      const user = await User.findById(userId);
+      return res.status(200).json({
+        success: true,
+        pinnedRepositories: user?.pinnedRepositories || []
+      });
+    } catch (err) {
+      next(err);
+    }
   }
 };
 

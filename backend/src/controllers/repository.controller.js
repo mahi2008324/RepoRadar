@@ -175,7 +175,10 @@ export const repositoryController = {
 
       let content = null;
       if (repo.fileContents) {
-        if (typeof repo.fileContents.get === 'function') {
+        if (Array.isArray(repo.fileContents)) {
+          const match = repo.fileContents.find(f => f.path === filePath);
+          content = match ? match.content : null;
+        } else if (typeof repo.fileContents.get === 'function') {
           content = repo.fileContents.get(filePath);
         } else {
           content = repo.fileContents[filePath];

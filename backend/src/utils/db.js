@@ -2,6 +2,14 @@
  * MongoDB connection with automated in-memory MongoDB fallback
  */
 import mongoose from 'mongoose';
+import dns from 'node:dns';
+
+// Configure reliable DNS servers to ensure MongoDB Atlas SRV records resolve cleanly on Windows
+try {
+  dns.setServers(['8.8.8.8', '1.1.1.1']);
+} catch {
+  // Ignore if custom DNS cannot be set
+}
 
 let isConnected = false;
 let isMemoryFallback = false;

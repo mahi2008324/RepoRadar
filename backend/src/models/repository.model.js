@@ -14,7 +14,7 @@ const FileEntrySchema = new mongoose.Schema({
   imports: [{
     target: String,
     rawSource: String,
-    type: String,
+    type: { type: String },
     line: Number
   }],
   externalImports: [{
@@ -82,11 +82,10 @@ const RepositoryAnalysisSchema = new mongoose.Schema({
     size: Number,
     isSupported: Boolean
   }],
-  fileContents: {
-    type: Map,
-    of: String,
-    default: {}
-  },
+  fileContents: [{
+    path: String,
+    content: String
+  }],
   nodes: [GraphNodeSchema],
   edges: [GraphEdgeSchema],
   cycles: [[String]],
@@ -174,7 +173,11 @@ export const RepositoryAnalysis = {
       languages: analysisData.languages,
       files: analysisData.files,
       allFiles: analysisData.allFiles,
-      fileContents: analysisData.fileContents,
+      fileContents: Array.isArray(analysisData.fileContents)
+        ? analysisData.fileContents
+        : (analysisData.fileContents && typeof analysisData.fileContents === 'object')
+        ? Object.entries(analysisData.fileContents).map(([p, c]) => ({ path: p, content: c }))
+        : [],
       nodes: analysisData.nodes,
       edges: analysisData.edges,
       cycles: analysisData.cycles,

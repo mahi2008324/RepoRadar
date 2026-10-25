@@ -17,9 +17,11 @@ import {
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { repositoryService } from '../services/repositoryService';
+import { useAuth } from '../context/AuthContext';
 
 export function LandingPage() {
   const navigate = useNavigate();
+  const { isAuthenticated } = useAuth();
 
   const [url, setUrl] = useState('');
   const [error, setError] = useState(null);
@@ -61,6 +63,18 @@ export function LandingPage() {
     const validationError = validateUrl(url);
     if (validationError) {
       setError(validationError);
+      return;
+    }
+
+    // Require sign-in before triggering analysis
+    if (!isAuthenticated) {
+      navigate('/login', {
+        state: {
+          from: { pathname: '/dashboard' },
+          pendingRepoUrl: url.trim(),
+          message: 'Please sign in or create an account to analyze GitHub repositories.'
+        }
+      });
       return;
     }
 

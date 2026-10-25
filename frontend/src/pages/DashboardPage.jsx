@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
   FolderGit2,
   FileCode2,
@@ -26,6 +26,7 @@ import { ErrorState } from '../components/common/ErrorState';
 
 export function DashboardPage() {
   const navigate = useNavigate();
+  const location = useLocation();
 
   const [repos, setRepos] = useState([]);
   const [stats, setStats] = useState({
@@ -38,9 +39,9 @@ export function DashboardPage() {
   const [error, setError] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Analyze Modal State
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [newUrl, setNewUrl] = useState('');
+  // Analyze Modal State - auto-open if redirected with pending URL
+  const [isModalOpen, setIsModalOpen] = useState(Boolean(location.state?.pendingRepoUrl));
+  const [newUrl, setNewUrl] = useState(location.state?.pendingRepoUrl || '');
   const [modalLoading, setModalLoading] = useState(false);
   const [modalError, setModalError] = useState(null);
 

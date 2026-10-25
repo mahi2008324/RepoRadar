@@ -28,7 +28,10 @@ export function LoginPage() {
       setLoading(true);
       setError(null);
       await login(email.trim(), password);
-      navigate(from, { replace: true });
+      navigate(from, {
+        replace: true,
+        state: { pendingRepoUrl: location.state?.pendingRepoUrl }
+      });
     } catch (err) {
       setError(err.message || 'Invalid email or password.');
     } finally {
@@ -54,6 +57,14 @@ export function LoginPage() {
             Sign in to access your analyzed codebases and interactive graphs.
           </p>
         </div>
+
+        {/* Info Message banner */}
+        {location.state?.message && !error && (
+          <div className="mb-5 p-3.5 bg-indigo-950/40 border border-indigo-500/40 rounded-xl flex items-start gap-2.5 text-xs text-indigo-300">
+            <Sparkles className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5" />
+            <span>{location.state.message}</span>
+          </div>
+        )}
 
         {/* Error Alert */}
         {error && (

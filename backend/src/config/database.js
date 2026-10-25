@@ -85,7 +85,7 @@ class MemoryStore {
 export const memoryStoreInstance = new MemoryStore();
 
 export async function connectDatabase() {
-  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017/reporadar';
+  const uri = process.env.MONGODB_URI || process.env.MONGO_URI || 'mongodb://localhost:27017/reporadar';
 
   try {
     // Attempt Mongoose connection with 3-second timeout

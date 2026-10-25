@@ -57,6 +57,93 @@ flowchart TD
 
 ---
 
+## 📁 Project Structure
+
+RepoRadar adheres to a clean, modular MERN architecture with dedicated `backend/` and `frontend/` workspaces:
+
+```text
+reporadar/
+├── backend/            # Express REST API, MongoDB models, auth & controllers
+├── frontend/           # React + Vite client app, Tailwind CSS design system
+├── README.md           # Complete documentation, API guides, and architecture
+├── .gitignore          # Git exclusion rules
+└── package.json        # Root scripts to orchestrate backend & frontend
+
+⚙️ Backend Structure (backend/)
+backend/
+├── index.js                     # Express app entry point, middleware registration & route mounting
+├── .env.example                 # Environment variable template (PORT, MONGO_URI, JWT_SECRET, etc.)
+├── seed.js                      # Standalone CLI script to seed MongoDB with initial popular repositories
+├── package.json                 # Node package dependencies and script definitions
+├── tests/                       # Automated unit and API integration test suite (35 passing tests)
+└── src/
+    ├── config/
+    │   └── database.js          # MongoDB connection with automated in-memory MongoDB fallback
+    ├── controllers/
+    │   ├── auth.controller.js       # User registration, login, profile fetching (JWT)
+    │   └── repository.controller.js # Repository scanning, graph generation, file content, impact
+    ├── models/
+    │   ├── user.model.js            # User schema (name, email, salted bcrypt password)
+    │   └── repository.model.js      # Repository analysis schema & resilient memory fallback store
+    ├── routes/
+    │   ├── auth.routes.js           # /api/auth endpoints (/register, /login, /me)
+    │   ├── repository.routes.js     # /api/repositories endpoints (/analyze, :id, graph, impact)
+    │   └── health.routes.js         # /api/health endpoint
+    ├── middlewares/
+    │   ├── auth.middleware.js       # Verifies JWT Bearer tokens and attaches user to req.user
+    │   ├── rateLimiter.middleware.js # Express rate limiting for API protection
+    │   └── error.middleware.js      # Centralized error handler and JSON formatter
+    ├── services/
+    │   ├── githubService.js         # GitHub REST API tree fetching & file streaming
+    │   ├── importParser.js          # Babel AST parser for ESM, CJS, dynamic imports & TS
+    │   ├── dependencyResolver.js    # Module path resolver & external package classifier
+    │   └── graphService.js          # Directed graph builder, cycle detector & impact calculator
+    └── utils/
+        ├── db.js                    # MongoDB / Memory fallback connection helper
+        ├── generateToken.js         # Signs JWTs with configurable expiration
+        ├── githubUrl.js             # GitHub URL parser, validator & SSRF filter
+        └── fileFilters.js           # Excludes binaries, lockfiles, minified bundles, vendor
+
+🎨 Frontend Structure (frontend/)
+frontend/
+├── index.html                   # HTML document root and Google Fonts preconnect
+├── vite.config.js               # Vite configuration and dev server proxy
+├── package.json                 # Frontend dependencies (React 19, Lucide icons, React Flow, Recharts)
+├── vercel.json                  # Single Page Application (SPA) rewrite fallback configuration
+└── src/
+    ├── main.jsx                 # React root initialization with AuthProvider and Router
+    ├── App.jsx                  # Top-level route declarations, navigation layout, and route guards
+    ├── index.css                # Core design system tokens, glassmorphism styling, and animations
+    ├── context/
+    │   └── AuthContext.jsx      # Global auth state (logged-in user, login, register, logout)
+    ├── services/
+    │   ├── api.js               # Centralized API client with JWT attachment & error interceptors
+    │   └── repositoryService.js # Repository scanning, graph fetching, and file APIs
+    ├── components/
+    │   ├── Navbar.jsx           # Responsive frosted glass navigation bar with auth badges
+    │   ├── ProtectedRoute.jsx   # Route guard requiring authenticated users
+    │   ├── PublicOnlyRoute.jsx  # Redirects authenticated users away from login/register pages
+    │   ├── SearchBar.jsx        # Search input with debounce & scan trigger
+    │   ├── common/              # Button, Modal, Input, Skeleton, ErrorState, EmptyState
+    │   ├── explorer/            # FileTree, SourceViewer, FileDetailsPanel
+    │   ├── graph/               # CustomNode, DependencyGraph, GraphControls, GraphLegend
+    │   └── layout/              # RepositoryLayout, PublicNavbar
+    └── pages/
+        ├── Home.jsx             # Hero landing section with features & quick scan
+        ├── Dashboard.jsx        # Platform statistics and repository catalog
+        ├── RepositoryOverview.jsx # Repository health, language metrics & notices
+        ├── CodeExplorer.jsx     # Three-panel AST code explorer with syntax highlighting
+        ├── DependencyGraph.jsx  # Interactive React Flow directed graph
+        ├── DependencyAnalysis.jsx # Cycles, top imported files, blast radius calculator
+        ├── History.jsx          # Historical repository analysis timeline
+        ├── Settings.jsx         # User profile, tokens, and storage preferences
+        ├── Login.jsx            # User sign in page
+        ├── Register.jsx         # User registration page
+        └── NotFound.jsx         # 404 fallback page
+```
+
+---
+
 ## 🛠️ Technology Stack
 
 | Layer | Technologies |

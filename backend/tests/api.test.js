@@ -1,7 +1,7 @@
 import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert';
-import app from '../src/app.js';
-import { RepositoryAnalysis } from '../src/models/RepositoryAnalysis.js';
+import app from '../index.js';
+import { RepositoryAnalysis } from '../src/models/repository.model.js';
 
 let server;
 let baseUrl;

@@ -1,22 +1,51 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
-import { Radar, Compass, History, Settings, LayoutDashboard, LogOut, LogIn, Sparkles } from 'lucide-react';
+import {
+  Radar,
+  Compass,
+  History,
+  Settings,
+  LayoutDashboard,
+  LogOut,
+  LogIn,
+  ChevronDown,
+  User,
+  ShieldCheck,
+  Sparkles
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './common/Button';
 
 /**
- * Responsive frosted glassmorphism navigation bar with badges and profile menu
+ * Responsive frosted glassmorphism navigation bar with badges and profile dropdown menu
  */
 export function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, isAuthenticated, logout } = useAuth();
+  const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const profileMenuRef = useRef(null);
 
   const navLinks = [
     { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'History', path: '/history', icon: History },
-    { name: 'Settings', path: '/settings', icon: Settings },
+    { name: 'History', path: '/history', icon: History }
   ];
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsProfileOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  // Close dropdown on route change
+  useEffect(() => {
+    setIsProfileOpen(false);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     logout();
@@ -64,24 +93,97 @@ export function Navbar() {
 
           <div className="h-4 w-px bg-radar-border mx-1" />
 
-          {/* Authentication Actions */}
+          {/* Authentication Actions & Profile Dropdown */}
           {isAuthenticated ? (
-            <div className="flex items-center gap-2 ml-1">
-              <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-lg bg-radar-surface border border-radar-border text-xs">
-                <div className="w-5 h-5 rounded-full bg-indigo-600/60 text-indigo-200 font-semibold flex items-center justify-center text-[10px]">
+            <div className="relative ml-1" ref={profileMenuRef}>
+              <button
+                type="button"
+                onClick={() => setIsProfileOpen((prev) => !prev)}
+                className={`flex items-center gap-2 px-2.5 py-1.5 rounded-xl border text-xs transition-all ${
+                  isProfileOpen
+                    ? 'bg-radar-surface border-indigo-500/60 shadow-glow-primary text-white'
+                    : 'bg-radar-surface/80 hover:bg-radar-surface border-radar-border text-radar-text'
+                }`}
+                aria-expanded={isProfileOpen}
+                aria-haspopup="true"
+              >
+                <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 text-white font-semibold flex items-center justify-center text-[11px] shadow-sm">
                   {user?.name ? user.name.charAt(0).toUpperCase() : 'U'}
                 </div>
-                <span className="font-medium text-radar-text max-w-[100px] truncate hidden sm:inline">
+                <span className="font-medium max-w-[110px] truncate hidden sm:inline">
                   {user?.name}
                 </span>
-              </div>
-              <button
-                onClick={handleLogout}
-                className="p-2 text-radar-textSubtle hover:text-red-400 rounded-lg hover:bg-radar-surface border border-transparent hover:border-radar-border transition-colors"
-                title="Sign Out"
-              >
-                <LogOut className="w-4 h-4" />
+                <ChevronDown
+                  className={`w-3.5 h-3.5 text-radar-textSubtle transition-transform duration-200 ${
+                    isProfileOpen ? 'rotate-180 text-indigo-400' : ''
+                  }`}
+                />
               </button>
+
+              {/* Profile Dropdown Menu */}
+              {isProfileOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-radar-card/95 border border-radar-border rounded-2xl shadow-card-dark p-2 text-xs backdrop-blur-xl animate-in fade-in zoom-in-95 duration-150 z-50">
+                  {/* User Info Header */}
+                  <div className="px-3 py-2.5 bg-radar-surface/60 rounded-xl mb-1.5 border border-radar-border/40">
+                    <p className="font-semibold text-radar-text text-sm truncate">
+                      {user?.name || 'Developer'}
+                    </p>
+                    <p className="text-[11px] text-radar-textSubtle truncate font-mono mt-0.5">
+                      {user?.email}
+                    </p>
+                    <div className="flex items-center gap-1.5 mt-2 text-[10px] text-emerald-400 font-medium">
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                      <span>Authenticated Session</span>
+                    </div>
+                  </div>
+
+                  {/* Menu Items */}
+                  <div className="space-y-0.5">
+                    <Link
+                      to="/settings"
+                      onClick={() => setIsProfileOpen(false)}
+                      className={`flex items-center gap-2.5 px-3 py-2 rounded-xl transition-colors ${
+                        location.pathname === '/settings'
+                          ? 'bg-indigo-600/20 text-indigo-300 font-medium border border-indigo-500/30'
+                          : 'text-radar-text hover:text-white hover:bg-radar-surface/80'
+                      }`}
+                    >
+                      <Settings className="w-4 h-4 text-indigo-400" />
+                      <span>Settings & Environment</span>
+                    </Link>
+
+                    <Link
+                      to="/dashboard"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-radar-text hover:text-white hover:bg-radar-surface/80 transition-colors"
+                    >
+                      <LayoutDashboard className="w-4 h-4 text-slate-400" />
+                      <span>Dashboard</span>
+                    </Link>
+
+                    <Link
+                      to="/history"
+                      onClick={() => setIsProfileOpen(false)}
+                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-radar-text hover:text-white hover:bg-radar-surface/80 transition-colors"
+                    >
+                      <History className="w-4 h-4 text-slate-400" />
+                      <span>Scan History</span>
+                    </Link>
+                  </div>
+
+                  <div className="h-px bg-radar-border my-1.5" />
+
+                  {/* Sign Out */}
+                  <button
+                    type="button"
+                    onClick={handleLogout}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-950/30 border border-transparent hover:border-red-500/30 transition-colors"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span className="font-medium">Sign Out</span>
+                  </button>
+                </div>
+              )}
             </div>
           ) : (
             <div className="flex items-center gap-2 ml-1">

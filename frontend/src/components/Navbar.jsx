@@ -153,15 +153,6 @@ export function Navbar() {
                     </Link>
 
                     <Link
-                      to="/dashboard"
-                      onClick={() => setIsProfileOpen(false)}
-                      className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-radar-text hover:text-white hover:bg-radar-surface/80 transition-colors"
-                    >
-                      <LayoutDashboard className="w-4 h-4 text-slate-400" />
-                      <span>Dashboard</span>
-                    </Link>
-
-                    <Link
                       to="/history"
                       onClick={() => setIsProfileOpen(false)}
                       className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-radar-text hover:text-white hover:bg-radar-surface/80 transition-colors"

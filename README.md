@@ -355,5 +355,20 @@ Major Features:
 
 ---
 
+## 🎬 3 to 5 Minute Demo Presentation Script
+
+For recording your demonstration video:
+
+- **Segment 1 (0:00 – 0:40) Introduction & Problem**: Open `http://localhost:5173/`, introduce RepoRadar, explain challenges with understanding large unfamiliar codebases.
+- **Segment 2 (0:40 – 1:20) Analysis Pipeline**: Enter `https://github.com/expressjs/express`, click Scan, explain AST parsing, filtering, and cycle detection.
+- **Segment 3 (1:20 – 2:00) Overview & Health**: Walk through analyzed files (140), internal edges (74), external packages (54), and directory statistics.
+- **Segment 4 (2:00 – 2:45) Three-Panel Code Explorer**: Select `lib/express.js`, show syntax highlighting, line numbers, and click-to-navigate dependencies.
+- **Segment 5 (2:45 – 3:30) Interactive Directed Graph**: Explore React Flow canvas, node selection, edge arrows (`A -> B` means `A` imports `B`), and mini-map.
+- **Segment 6 (3:30 – 4:10) Blast Radius & Metrics**: Demonstrate ripple-effect calculator on `lib/express.js` (26 affected files), cycles, and ranking tables.
+- **Segment 7 (4:10 – 4:45) Auth, Tests & Persistence**: Show Login/Register, Dashboard saved repositories, and 35 passing automated tests.
+
+---
+
 ## 📄 License
 MIT License. Built as an open-source developer productivity tool.
+

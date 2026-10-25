@@ -25,10 +25,10 @@ export default function App() {
         <Navbar />
         <main className="flex-1 flex flex-col">
           <Routes>
-            {/* Public Landing */}
+            {/* Public Landing Page */}
             <Route path="/" element={<Home />} />
 
-            {/* Public-Only Auth Routes */}
+            {/* Public-Only Auth Pages (Redirects logged-in users to /dashboard) */}
             <Route
               path="/login"
               element={
@@ -46,13 +46,41 @@ export default function App() {
               }
             />
 
-            {/* Core Application Routes */}
-            <Route path="/dashboard" element={<Dashboard />} />
-            <Route path="/history" element={<History />} />
-            <Route path="/settings" element={<Settings />} />
+            {/* Protected Routes (Redirects unauthenticated visitors to /login) */}
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/history"
+              element={
+                <ProtectedRoute>
+                  <History />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
 
-            {/* Repository Multi-Page Nested Routes */}
-            <Route path="/repositories/:id" element={<RepositoryLayout />}>
+            {/* Repository Multi-Page Nested Routes (Protected) */}
+            <Route
+              path="/repositories/:id"
+              element={
+                <ProtectedRoute>
+                  <RepositoryLayout />
+                </ProtectedRoute>
+              }
+            >
               <Route index element={<RepositoryOverview />} />
               <Route path="explorer" element={<CodeExplorer />} />
               <Route path="graph" element={<DependencyGraph />} />

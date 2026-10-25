@@ -1,7 +1,21 @@
 # RepoRadar 📡
 > **Turn any GitHub repository into an interactive map of its codebase.**
 
-RepoRadar is a full-stack developer tool built on the MERN stack that enables developers, architects, and engineering teams to understand unfamiliar codebases in minutes. By retrieving a public GitHub repository's tree and parsing source files through Babel's Abstract Syntax Tree (AST) engine, RepoRadar extracts genuine import/export relationships, detects directed cycles, calculates dependency metrics, and presents an interactive codebase map.
+## 🎯 Problem Statement
+When developers onboard onto unfamiliar open-source projects or legacy enterprise codebases, understanding the architectural flow takes days of tedious manual inspection. Flat file trees and simple text search fail to answer critical software engineering questions:
+- What does this codebase actually contain and which files are heavily coupled?
+- Which files are imported most frequently across the project?
+- What is the blast radius (ripple effect) if a specific core file is refactored?
+- Are there hidden circular dependency loops that could cause bundling or runtime initialization bugs?
+
+## 👥 Target Users
+- **Software Engineers & Developers**: Rapidly understand unfamiliar open-source or team repositories before contributing.
+- **Software Architects & Tech Leads**: Inspect structural coupling, audit code modularity, and detect circular dependencies.
+- **Code Reviewers & QA Engineers**: Assess the blast radius of changes to prevent unexpected regressions.
+- **Students & Learners**: Visually explore real-world production codebases and study modern design patterns.
+
+## 💡 Proposed Solution
+RepoRadar transforms any public GitHub repository into an interactive, multi-dimensional codebase map. By fetching the bounded source tree and parsing files with Babel's Abstract Syntax Tree (AST) engine, RepoRadar extracts actual internal import/export relationships, isolates external npm packages, detects directed cycles, and computes transitive blast radius metrics through a responsive, multi-page dark developer workspace.
 
 ---
 
@@ -221,6 +235,36 @@ Launches both the Express API server on `http://localhost:5000` and the Vite Rea
 - **Dynamic Imports**: Statically detectable `import('...')` string literals and CommonJS `require('...')` calls are mapped. Computed runtime expressions (e.g. `require('./plugins/' + name)`) cannot be statically resolved.
 - **Repository Bounds**: To ensure responsive browser performance and respect GitHub API quotas, single repository analysis is bounded to 150 source files and files under 250 KB.
 - **Path Aliases**: Standard `@/...` and `~/...` aliases mapping to `src/` or root are resolved. Highly customized `tsconfig.json` paths or dynamic webpack plugins are reported in unresolved imports.
+
+---
+
+## 📋 End-Term Project Submission Details
+
+Use the following information when completing the [Official Submission Form](https://forms.gle/sBy4sfqyiRG2Zpom9):
+
+```text
+Project Name: RepoRadar
+
+Student Name: [Your Name]
+
+Problem Statement: Understanding unfamiliar, complex open-source or company codebases requires days of tedious manual inspection. Flat file trees and text search cannot reveal architectural coupling, high-frequency dependencies, transitive blast radius impact, or hidden circular dependency loops.
+
+GitHub Repository: [Your GitHub Repository URL]
+
+Deployed Application / Build: [Your Deployed Vercel URL]
+
+Demo Video: [Link to 3-5 minute demo video on YouTube / Google Drive / Loom]
+
+Tech Stack: React 19, Vite, React Router, Tailwind CSS, React Flow (@xyflow/react), Node.js, Express.js, Babel AST Parser (@babel/parser, @babel/traverse), MongoDB Atlas, Mongoose, JWT, bcryptjs
+
+Major Features:
+1. Real AST Source Import Analysis (ESM, CJS, TypeScript, JSX)
+2. Interactive Directed Codebase Graph with Hierarchical Layering
+3. Transitive Blast Radius Impact Analysis (ripple effect calculator)
+4. DFS Directed Cycle Detection & Disconnected File Auditor
+5. Three-Panel Code Explorer with Syntax Highlighting and AST Inspector
+6. JWT User Authentication & Platform Analytics Dashboard
+```
 
 ---
 

@@ -19,18 +19,24 @@ import {
   Star,
   GitCompare,
   FileText,
-  Code2
+  Code2,
+  Compass,
+  ShieldAlert
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { calculateHealthScore } from '../utils/healthCalculator';
 import { downloadMarkdownAudit, downloadJsonGraph } from '../utils/auditExporter';
 import { useAuth } from '../context/AuthContext';
+import OnboardingTourModal from '../components/OnboardingTourModal';
+import SecurityRadarModal from '../components/SecurityRadarModal';
 
 export function RepositoryOverviewPage() {
   const { repo, refreshRepo } = useOutletContext();
   const navigate = useNavigate();
   const { togglePin, isPinned } = useAuth();
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
+  const [isTourOpen, setIsTourOpen] = useState(false);
+  const [isSecurityRadarOpen, setIsSecurityRadarOpen] = useState(false);
 
   if (!repo) return null;
 
@@ -117,6 +123,26 @@ export function RepositoryOverviewPage() {
                 </div>
               )}
             </div>
+
+            {/* Developer Experience: Onboarding Tour */}
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<Compass className="w-4 h-4 text-cyan-400 animate-spin-slow" />}
+              onClick={() => setIsTourOpen(true)}
+            >
+              Onboarding Tour
+            </Button>
+
+            {/* Cybersecurity: Supply Chain Radar */}
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<ShieldAlert className="w-4 h-4 text-amber-400" />}
+              onClick={() => setIsSecurityRadarOpen(true)}
+            >
+              Security Radar
+            </Button>
 
             {/* Compare with another repo */}
             <Button
@@ -323,6 +349,20 @@ export function RepositoryOverviewPage() {
           </p>
         </div>
       )}
+
+      {/* Developer Experience: Onboarding Tour Modal */}
+      <OnboardingTourModal
+        isOpen={isTourOpen}
+        onClose={() => setIsTourOpen(false)}
+        repository={repo}
+      />
+
+      {/* Cybersecurity: Supply Chain & CVE Blast Radius Modal */}
+      <SecurityRadarModal
+        isOpen={isSecurityRadarOpen}
+        onClose={() => setIsSecurityRadarOpen(false)}
+        repository={repo}
+      />
     </div>
   );
 }

@@ -163,10 +163,10 @@ cd RepoRadar
 ```bash
 npm run install:all
 ```
-*(Or install in root, server, and client directories: `npm install && cd server && npm install && cd ../client && npm install`)*
+*(Or install in root, backend, and frontend directories: `npm install && cd backend && npm install && cd ../frontend && npm install`)*
 
 ### 3. Configure environment variables
-Copy `.env.example` to `server/.env` and `client/.env`:
+Copy `.env.example` to `backend/.env` and `frontend/.env`:
 ```bash
 # Backend configuration (backend/.env)
 PORT=5000

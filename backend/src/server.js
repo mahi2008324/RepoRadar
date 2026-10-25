@@ -17,6 +17,16 @@ async function startServer() {
     console.log(`===============================================`);
   });
 
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`\n❌ [Error] Port ${PORT} is already in use by another process.`);
+      console.error(`💡 [Tip] Stop any other running instance on port ${PORT} or configure a different PORT in backend/.env\n`);
+      process.exit(1);
+    } else {
+      console.error('❌ Server startup error:', err);
+    }
+  });
+
   const handleShutdown = () => {
     console.log('Shutting down RepoRadar server gracefully...');
     server.close(() => {

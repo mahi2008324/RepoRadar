@@ -168,13 +168,13 @@ npm run install:all
 ### 3. Configure environment variables
 Copy `.env.example` to `server/.env` and `client/.env`:
 ```bash
-# Server configuration (server/.env)
+# Backend configuration (backend/.env)
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/reporadar
 GITHUB_TOKEN=   # Optional: higher rate limits for public GitHub API
 CLIENT_URL=http://localhost:5173
 
-# Client configuration (client/.env)
+# Frontend configuration (frontend/.env)
 VITE_API_BASE_URL=http://localhost:5000/api
 ```
 *(Note: If no local or remote MongoDB instance is running, RepoRadar automatically activates its resilient in-memory storage fallback with zero configuration required!)*
@@ -189,7 +189,7 @@ Runs 28 automated unit and integration tests verifying URL parsing, AST imports,
 ```bash
 npm run dev
 ```
-Launches both the Express API server on `http://localhost:5000` and the Vite React client on `http://localhost:5173`.
+Launches both the Express API server on `http://localhost:5000` and the Vite React frontend on `http://localhost:5173`.
 
 ---
 
@@ -197,13 +197,13 @@ Launches both the Express API server on `http://localhost:5000` and the Vite Rea
 
 ### Frontend (Vercel)
 1. Push repository to GitHub.
-2. Import the `client/` folder into Vercel.
+2. Import the `frontend/` folder into Vercel.
 3. Set Environment Variable: `VITE_API_BASE_URL=https://your-backend.onrender.com/api`.
 4. Build Command: `npm run build` (Output Directory: `dist`).
-5. Notice: `client/vercel.json` and `client/public/_redirects` are already configured for client-side React Router rewrites.
+5. Notice: `frontend/vercel.json` and `frontend/public/_redirects` are already configured for client-side React Router rewrites.
 
 ### Backend (Render)
-1. Create a new Web Service on Render pointing to the `server/` root.
+1. Create a new Web Service on Render pointing to the `backend/` root.
 2. Build Command: `npm install`.
 3. Start Command: `node src/server.js`.
 4. Environment Variables:

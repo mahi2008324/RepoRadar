@@ -12,12 +12,15 @@ import {
   ShieldCheck,
   CheckCircle2,
   FileCode,
-  Layers
+  Layers,
+  Scissors
 } from 'lucide-react';
 import { repositoryService } from '../services/repositoryService';
 import { Skeleton } from '../components/common/Skeleton';
 import { ErrorState } from '../components/common/ErrorState';
 import { Button } from '../components/common/Button';
+import RefactorSimulatorModal from '../components/RefactorSimulatorModal';
+import LayerBoundaryModal from '../components/LayerBoundaryModal';
 
 export function DependencyAnalysisPage() {
   const { repo } = useOutletContext();
@@ -27,6 +30,8 @@ export function DependencyAnalysisPage() {
   const [analysis, setAnalysis] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [isRefactorModalOpen, setIsRefactorModalOpen] = useState(false);
+  const [isLayerModalOpen, setIsLayerModalOpen] = useState(false);
 
   // Impact Analysis state
   const [selectedFileForImpact, setSelectedFileForImpact] = useState('');
@@ -277,16 +282,34 @@ export function DependencyAnalysisPage() {
 
       {/* C. Circular Dependencies Section */}
       <section className="p-5 bg-radar-card border border-radar-border rounded-xl">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
           <div className="flex items-center gap-2">
             <AlertOctagon className={`w-5 h-5 ${cycles.length > 0 ? 'text-amber-400' : 'text-emerald-400'}`} />
             <h3 className="text-base font-semibold text-radar-text">
               Potential Circular Dependencies ({cycles.length})
             </h3>
           </div>
-          <span className="text-xs text-radar-textSubtle font-mono">
-            {cycles.length > 0 ? 'Cycle Detected' : 'Acyclic (Clean DAG)'}
-          </span>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<Scissors className="w-3.5 h-3.5 text-rose-400" />}
+              onClick={() => setIsRefactorModalOpen(true)}
+            >
+              Refactor Sandbox
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<Layers className="w-3.5 h-3.5 text-violet-400" />}
+              onClick={() => setIsLayerModalOpen(true)}
+            >
+              Layer Rules
+            </Button>
+            <span className="text-xs text-radar-textSubtle font-mono hidden md:inline">
+              {cycles.length > 0 ? 'Cycle Detected' : 'Acyclic (Clean DAG)'}
+            </span>
+          </div>
         </div>
 
         {cycles.length === 0 ? (
@@ -528,6 +551,20 @@ export function DependencyAnalysisPage() {
           </div>
         )}
       </section>
+
+      {/* Refactor Simulator Sandbox Modal */}
+      <RefactorSimulatorModal
+        isOpen={isRefactorModalOpen}
+        onClose={() => setIsRefactorModalOpen(false)}
+        repository={repo}
+      />
+
+      {/* Clean Architecture Layer Boundary Enforcer Modal */}
+      <LayerBoundaryModal
+        isOpen={isLayerModalOpen}
+        onClose={() => setIsLayerModalOpen(false)}
+        repository={repo}
+      />
     </div>
   );
 }

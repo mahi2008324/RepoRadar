@@ -14,7 +14,7 @@ import {
   Info
 } from 'lucide-react';
 
-export default function CodeCity3D({ repository }) {
+export default function CodeCity3D({ repository, nodes: propNodes, edges: propEdges }) {
   const canvasRef = useRef(null);
   const navigate = useNavigate();
 
@@ -27,8 +27,23 @@ export default function CodeCity3D({ repository }) {
   const isDraggingRef = useRef(false);
   const lastMousePosRef = useRef({ x: 0, y: 0 });
 
-  const nodes = repository?.nodes || [];
-  const edges = repository?.edges || [];
+  const nodes = useMemo(() => {
+    if (Array.isArray(propNodes) && propNodes.length > 0) return propNodes;
+    if (Array.isArray(repository?.nodes) && repository.nodes.length > 0) return repository.nodes;
+    if (Array.isArray(repository?.files) && repository.files.length > 0) {
+      return repository.files.map(f => {
+        const path = typeof f === 'string' ? f : (f.path || f.name || String(f));
+        return { id: path, path, label: path.split('/').pop() };
+      });
+    }
+    return [];
+  }, [propNodes, repository]);
+
+  const edges = useMemo(() => {
+    if (Array.isArray(propEdges) && propEdges.length > 0) return propEdges;
+    if (Array.isArray(repository?.edges)) return repository.edges;
+    return [];
+  }, [propEdges, repository]);
 
   // 1. Process Nodes into City Districts & 3D Building Coordinates
   const cityLayout = useMemo(() => {

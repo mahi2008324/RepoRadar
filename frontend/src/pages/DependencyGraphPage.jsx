@@ -101,7 +101,11 @@ export function DependencyGraphPage() {
             initialSelectedId={initialSelect}
           />
         ) : (
-          <CodeCity3D repository={repo} />
+          <CodeCity3D
+            repository={repo}
+            nodes={graphData.nodes}
+            edges={graphData.edges}
+          />
         )}
       </div>
     </div>

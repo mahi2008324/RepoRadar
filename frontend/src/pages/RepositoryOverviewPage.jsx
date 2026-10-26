@@ -21,7 +21,9 @@ import {
   FileText,
   Code2,
   Compass,
-  ShieldAlert
+  ShieldAlert,
+  Scissors,
+  Code
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { calculateHealthScore } from '../utils/healthCalculator';
@@ -29,6 +31,9 @@ import { downloadMarkdownAudit, downloadJsonGraph } from '../utils/auditExporter
 import { useAuth } from '../context/AuthContext';
 import OnboardingTourModal from '../components/OnboardingTourModal';
 import SecurityRadarModal from '../components/SecurityRadarModal';
+import EmbedReadmeModal from '../components/EmbedReadmeModal';
+import LayerBoundaryModal from '../components/LayerBoundaryModal';
+import RefactorSimulatorModal from '../components/RefactorSimulatorModal';
 
 export function RepositoryOverviewPage() {
   const { repo, refreshRepo } = useOutletContext();
@@ -37,6 +42,9 @@ export function RepositoryOverviewPage() {
   const [isExportMenuOpen, setIsExportMenuOpen] = useState(false);
   const [isTourOpen, setIsTourOpen] = useState(false);
   const [isSecurityRadarOpen, setIsSecurityRadarOpen] = useState(false);
+  const [isReadmeModalOpen, setIsReadmeModalOpen] = useState(false);
+  const [isLayerModalOpen, setIsLayerModalOpen] = useState(false);
+  const [isRefactorModalOpen, setIsRefactorModalOpen] = useState(false);
 
   if (!repo) return null;
 
@@ -142,6 +150,36 @@ export function RepositoryOverviewPage() {
               onClick={() => setIsSecurityRadarOpen(true)}
             >
               Security Radar
+            </Button>
+
+            {/* Feature 1: What-If Refactor Simulator */}
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<Scissors className="w-4 h-4 text-rose-400" />}
+              onClick={() => setIsRefactorModalOpen(true)}
+            >
+              Refactor Sandbox
+            </Button>
+
+            {/* Feature 5: Architectural Layer Boundary Enforcer */}
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<Layers className="w-4 h-4 text-violet-400" />}
+              onClick={() => setIsLayerModalOpen(true)}
+            >
+              Layer Rules
+            </Button>
+
+            {/* Feature 3: Mermaid.js & README Badges */}
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<Code className="w-4 h-4 text-emerald-400" />}
+              onClick={() => setIsReadmeModalOpen(true)}
+            >
+              Embed in README
             </Button>
 
             {/* Compare with another repo */}
@@ -361,6 +399,27 @@ export function RepositoryOverviewPage() {
       <SecurityRadarModal
         isOpen={isSecurityRadarOpen}
         onClose={() => setIsSecurityRadarOpen(false)}
+        repository={repo}
+      />
+
+      {/* Feature 3: Mermaid.js & GitHub README Badges Modal */}
+      <EmbedReadmeModal
+        isOpen={isReadmeModalOpen}
+        onClose={() => setIsReadmeModalOpen(false)}
+        repository={repo}
+      />
+
+      {/* Feature 5: Clean Architecture Layer Boundary Enforcer Modal */}
+      <LayerBoundaryModal
+        isOpen={isLayerModalOpen}
+        onClose={() => setIsLayerModalOpen(false)}
+        repository={repo}
+      />
+
+      {/* Feature 1: What-If Architecture Refactoring Simulator Modal */}
+      <RefactorSimulatorModal
+        isOpen={isRefactorModalOpen}
+        onClose={() => setIsRefactorModalOpen(false)}
         repository={repo}
       />
     </div>

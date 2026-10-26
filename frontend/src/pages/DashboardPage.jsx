@@ -17,7 +17,8 @@ import {
   Calendar,
   Layers,
   GitCompare,
-  Sparkles
+  Sparkles,
+  ShieldCheck
 } from 'lucide-react';
 import { repositoryService } from '../services/repositoryService';
 import { useAuth } from '../context/AuthContext';

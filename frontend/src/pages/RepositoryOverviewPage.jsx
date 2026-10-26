@@ -23,7 +23,8 @@ import {
   Compass,
   ShieldAlert,
   Scissors,
-  Code
+  Code,
+  Ghost
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { calculateHealthScore } from '../utils/healthCalculator';
@@ -34,6 +35,7 @@ import SecurityRadarModal from '../components/SecurityRadarModal';
 import EmbedReadmeModal from '../components/EmbedReadmeModal';
 import LayerBoundaryModal from '../components/LayerBoundaryModal';
 import RefactorSimulatorModal from '../components/RefactorSimulatorModal';
+import DeadCodeHunterModal from '../components/DeadCodeHunterModal';
 
 export function RepositoryOverviewPage() {
   const { repo, refreshRepo } = useOutletContext();
@@ -45,6 +47,7 @@ export function RepositoryOverviewPage() {
   const [isReadmeModalOpen, setIsReadmeModalOpen] = useState(false);
   const [isLayerModalOpen, setIsLayerModalOpen] = useState(false);
   const [isRefactorModalOpen, setIsRefactorModalOpen] = useState(false);
+  const [isDeadCodeModalOpen, setIsDeadCodeModalOpen] = useState(false);
 
   if (!repo) return null;
 
@@ -180,6 +183,16 @@ export function RepositoryOverviewPage() {
               onClick={() => setIsReadmeModalOpen(true)}
             >
               Embed in README
+            </Button>
+
+            {/* Dead Code & Orphan File Hunter */}
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<Ghost className="w-4 h-4 text-purple-400" />}
+              onClick={() => setIsDeadCodeModalOpen(true)}
+            >
+              Dead Code Hunter
             </Button>
 
             {/* Compare with another repo */}
@@ -420,6 +433,13 @@ export function RepositoryOverviewPage() {
       <RefactorSimulatorModal
         isOpen={isRefactorModalOpen}
         onClose={() => setIsRefactorModalOpen(false)}
+        repository={repo}
+      />
+
+      {/* Dead Code & Orphan File Hunter Modal */}
+      <DeadCodeHunterModal
+        isOpen={isDeadCodeModalOpen}
+        onClose={() => setIsDeadCodeModalOpen(false)}
         repository={repo}
       />
     </div>

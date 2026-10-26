@@ -64,6 +64,17 @@ export function AuthProvider({ children }) {
     return res;
   };
 
+  const loginAsGuest = async () => {
+    const res = await api.post('/auth/demo');
+    if (res.success && res.token && res.user) {
+      setToken(res.token);
+      setUser(res.user);
+      localStorage.setItem('reporadar_auth_token', res.token);
+      localStorage.setItem('reporadar_user', JSON.stringify(res.user));
+    }
+    return res;
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
@@ -109,6 +120,7 @@ export function AuthProvider({ children }) {
     loading,
     login,
     register,
+    loginAsGuest,
     logout,
     pinnedRepos: user?.pinnedRepositories || [],
     togglePin,

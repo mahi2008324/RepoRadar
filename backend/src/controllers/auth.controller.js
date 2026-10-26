@@ -104,6 +104,41 @@ export const authController = {
   },
 
   /**
+   * POST /api/auth/demo
+   * One-click instant guest login
+   */
+  async demo(req, res, next) {
+    try {
+      const demoEmail = 'guest.demo@reporadar.io';
+      let user = await User.findOne({ email: demoEmail });
+
+      if (!user) {
+        user = await User.create({
+          name: 'Demo Guest',
+          email: demoEmail,
+          password: 'GuestPassword123!'
+        });
+      }
+
+      const token = generateToken(user._id || user.id);
+
+      return res.status(200).json({
+        success: true,
+        message: 'Logged in as Demo Guest.',
+        token,
+        user: {
+          id: user._id || user.id,
+          name: user.name,
+          email: user.email,
+          pinnedRepositories: user.pinnedRepositories || []
+        }
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
    * POST /api/auth/pins/:repoId or POST /api/auth/pin
    * Toggle pinned repository for authenticated user
    */

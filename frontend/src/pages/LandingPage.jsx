@@ -21,7 +21,7 @@ import { useAuth } from '../context/AuthContext';
 
 export function LandingPage() {
   const navigate = useNavigate();
-  const { isAuthenticated } = useAuth();
+  const { isAuthenticated, loginAsGuest } = useAuth();
 
   const [url, setUrl] = useState('');
   const [error, setError] = useState(null);
@@ -217,20 +217,42 @@ export function LandingPage() {
           </div>
         )}
 
-        {/* Quick Example Repositories */}
+        {/* Quick Example Repositories & Instant Demo */}
         {!loading && (
-          <div className="flex flex-wrap items-center justify-center gap-2 mt-4 text-xs text-radar-textMuted">
-            <span className="text-radar-textSubtle">Try an example:</span>
-            {exampleRepos.map((example) => (
-              <button
-                key={example.label}
-                type="button"
-                onClick={() => setUrl(example.url)}
-                className="px-2.5 py-1 rounded-md bg-radar-surface hover:bg-slate-800 text-slate-300 hover:text-white border border-radar-border font-mono transition-colors"
-              >
-                {example.label}
-              </button>
-            ))}
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mt-4 text-xs text-radar-textMuted">
+            <div className="flex flex-wrap items-center justify-center gap-2">
+              <span className="text-radar-textSubtle">Try an example:</span>
+              {exampleRepos.map((example) => (
+                <button
+                  key={example.label}
+                  type="button"
+                  onClick={() => setUrl(example.url)}
+                  className="px-2.5 py-1 rounded-md bg-radar-surface hover:bg-slate-800 text-slate-300 hover:text-white border border-radar-border font-mono transition-colors"
+                >
+                  {example.label}
+                </button>
+              ))}
+            </div>
+
+            <span className="hidden sm:inline text-radar-border">|</span>
+
+            <button
+              type="button"
+              onClick={async () => {
+                try {
+                  if (!isAuthenticated) {
+                    await loginAsGuest();
+                  }
+                  navigate('/dashboard');
+                } catch {
+                  navigate('/dashboard');
+                }
+              }}
+              className="px-3 py-1 rounded-md bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/40 font-semibold transition-all flex items-center gap-1.5 shadow-sm"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>⚡ Test Drive Demo (Instant Access)</span>
+            </button>
           </div>
         )}
       </section>

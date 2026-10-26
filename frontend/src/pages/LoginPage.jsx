@@ -7,7 +7,7 @@ import { Button } from '../components/common/Button';
 export function LoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { login } = useAuth();
+  const { login, loginAsGuest } = useAuth();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -16,6 +16,19 @@ export function LoginPage() {
   const [error, setError] = useState(null);
 
   const from = location.state?.from?.pathname || '/dashboard';
+
+  const handleGuestLogin = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      await loginAsGuest();
+      navigate('/dashboard', { replace: true });
+    } catch (err) {
+      setError(err.message || 'Failed to start demo session.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -117,7 +130,7 @@ export function LoginPage() {
             </div>
           </div>
 
-          <div className="pt-2">
+          <div className="pt-2 space-y-2.5">
             <Button
               type="submit"
               variant="primary"
@@ -127,6 +140,26 @@ export function LoginPage() {
               rightIcon={<ArrowRight className="w-4 h-4" />}
             >
               Sign In
+            </Button>
+
+            <div className="relative flex items-center justify-center my-1">
+              <div className="border-t border-radar-border/80 w-full" />
+              <span className="bg-radar-card px-2.5 text-[10px] text-radar-textSubtle uppercase tracking-wider font-mono">
+                or
+              </span>
+              <div className="border-t border-radar-border/80 w-full" />
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              onClick={handleGuestLogin}
+              disabled={loading}
+              className="w-full !py-2.5 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10 hover:border-emerald-500"
+              leftIcon={<Sparkles className="w-4 h-4 text-emerald-400" />}
+            >
+              ⚡ Instant Demo Access (No Sign-Up)
             </Button>
           </div>
         </form>

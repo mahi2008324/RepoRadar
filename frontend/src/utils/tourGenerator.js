@@ -6,11 +6,23 @@
  */
 
 export function generateOnboardingTour(repository) {
-  if (!repository || !Array.isArray(repository.nodes)) {
+  if (!repository) {
     return [];
   }
 
-  const nodes = repository.nodes;
+  const nodes = (Array.isArray(repository.nodes) && repository.nodes.length > 0)
+    ? repository.nodes
+    : (Array.isArray(repository.files) && repository.files.length > 0)
+      ? repository.files.map(f => {
+          const path = typeof f === 'string' ? f : (f.path || f.name || String(f));
+          return { id: path, path, label: path.split('/').pop() };
+        })
+      : [];
+
+  if (nodes.length === 0) {
+    return [];
+  }
+
   const edges = repository.edges || [];
 
   // Helper: Get node inDegree and outDegree

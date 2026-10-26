@@ -164,4 +164,16 @@ describe('Authentication API Endpoints', () => {
     assert.strictEqual(unpinData.isPinned, false);
     assert.strictEqual(unpinData.pinnedRepositories.includes(fakeRepoId), false);
   });
+
+  it('POST /api/auth/demo should authenticate an instant guest user and return a JWT', async () => {
+    const res = await fetch(`${baseUrl}/api/auth/demo`, {
+      method: 'POST'
+    });
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.ok(data.token);
+    assert.strictEqual(data.user.email, 'guest.demo@reporadar.io');
+    assert.strictEqual(data.user.name, 'Demo Guest');
+  });
 });

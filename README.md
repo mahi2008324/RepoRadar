@@ -27,8 +27,10 @@ RepoRadar transforms any public GitHub repository into an interactive, multi-dim
 - **Blast Radius & Impact Analysis**: Select any file to compute its immediate callers, direct dependencies, and transitive dependents across the entire repository.
 - **Cycle & Anomaly Detection**: Depth-first search (DFS) with recursion stack identifies circular dependencies (`A ➔ B ➔ A`), isolated entry points, and unresolved path aliases.
 - **Three-Panel Code Explorer**: Browse hierarchical file trees, view syntax-highlighted source code with line numbers, and inspect incoming/outgoing dependencies with one-click navigation.
-- **User Authentication**: Secure JWT-based authentication with bcrypt password hashing, dedicated Login and Register pages, session persistence, and authorization headers.
-- **Persistent Platform Dashboard & History**: Saved repository analyses and platform statistics persisted in MongoDB Atlas (with seamless in-memory fallback for offline testing).
+- **Instant Guest / Demo Access**: 1-click test-drive mode granting full platform access without sign-up or email credentials.
+- **Dead Code & Orphan File Hunter**: Detects unreferenced internal files with 0 incoming imports (excluding entrypoints, configs, tests, routes), calculates wasted LOC and bundle bloat, and provides one-click cleanup checklists.
+- **Interactive 3D Code City**: Visualizes repository architecture as an interactive 3D procedural skyline where building heights map to file LOC and colors represent coupling and complexity.
+- **Architectural Onboarding Tour**: Automated guided walkthrough highlighting central architectural hubs, entrypoints, isolated modules, and circular dependency risks.
 - **Production-Ready Architecture**: Centralized error handling, input validation with SSRF protection, rate limiting, and responsive dark developer theme.
 
 ---

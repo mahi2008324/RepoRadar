@@ -7,6 +7,7 @@ const router = express.Router();
 router.post('/register', authController.register);
 router.post('/login', authController.login);
 router.post('/demo', authController.demo);
+router.post('/claim', authController.claim);
 router.get('/me', requireAuth, authController.me);
 router.get('/pins', requireAuth, authController.getPins);
 router.post('/pin', requireAuth, authController.togglePin);

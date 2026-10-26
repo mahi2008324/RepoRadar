@@ -9,6 +9,7 @@ import morgan from 'morgan';
 import healthRoutes from './src/routes/health.routes.js';
 import authRoutes from './src/routes/auth.routes.js';
 import repositoryRoutes from './src/routes/repository.routes.js';
+import leadRoutes from './src/routes/lead.routes.js';
 import { errorHandler } from './src/middlewares/error.middleware.js';
 import { apiLimiter } from './src/middlewares/rateLimiter.middleware.js';
 import { connectDB } from './src/utils/db.js';
@@ -54,6 +55,7 @@ app.use('/api', apiLimiter);
 app.use('/api/health', healthRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/repositories', repositoryRoutes);
+app.use('/api/leads', leadRoutes);
 
 // 404 Handler
 app.use('/api/*', (req, res) => {

@@ -12,14 +12,20 @@ import {
   X,
   Sparkles,
   CheckCircle2,
-  HardDrive
+  HardDrive,
+  Mail,
+  Send
 } from 'lucide-react';
+import { api } from '../services/api';
 import { findDeadCodeCandidates } from '../utils/deadCodeHunter';
 
 export default function DeadCodeHunterModal({ isOpen, onClose, repository }) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const [copied, setCopied] = useState(false);
+  const [leadEmail, setLeadEmail] = useState('');
+  const [leadStatus, setLeadStatus] = useState(null); // { success: boolean, message: string }
+  const [isSubmittingLead, setIsSubmittingLead] = useState(false);
 
   const report = useMemo(() => {
     return findDeadCodeCandidates(repository);
@@ -68,6 +74,39 @@ ${candidates.map((c, i) => `### ${i + 1}. \`${c.fileName}\` (~${c.loc} LOC)
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+  };
+
+  const handleEmailReport = async (e) => {
+    e.preventDefault();
+    if (!leadEmail.trim() || !/^\S+@\S+\.\S+$/.test(leadEmail.trim())) {
+      setLeadStatus({ success: false, message: 'Please provide a valid email address.' });
+      return;
+    }
+
+    try {
+      setIsSubmittingLead(true);
+      const res = await api.post('/leads/report', {
+        email: leadEmail.trim(),
+        repositoryName: repository.name || 'Repository',
+        reportType: 'dead-code-audit',
+        metadata: {
+          totalCandidates,
+          totalWastedLOC,
+          estimatedKBSaved,
+          cleanRatio
+        }
+      });
+      if (res.success) {
+        setLeadStatus({ success: true, message: `Full audit report dispatched to ${leadEmail.trim()}!` });
+        setLeadEmail('');
+      } else {
+        setLeadStatus({ success: false, message: res.message || 'Failed to dispatch report.' });
+      }
+    } catch (err) {
+      setLeadStatus({ success: false, message: err.response?.data?.message || err.message || 'Error sending report.' });
+    } finally {
+      setIsSubmittingLead(false);
+    }
   };
 
   return (
@@ -132,6 +171,49 @@ ${candidates.map((c, i) => `### ${i + 1}. \`${c.fileName}\` (~${c.loc} LOC)
             </span>
             <span className="text-[10px] text-radar-textSubtle block mt-0.5">Lines of Dead Code</span>
           </div>
+        </div>
+
+        {/* Email Lead Capture Box */}
+        <div className="px-5 py-3 bg-gradient-to-r from-purple-950/40 via-indigo-950/30 to-purple-950/40 border-b border-purple-500/20 text-xs">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Mail className="w-4 h-4 text-purple-400 shrink-0" />
+              <span className="text-radar-text font-medium">
+                Want this audit delivered to your inbox?
+              </span>
+            </div>
+
+            <form onSubmit={handleEmailReport} className="flex items-center gap-2 w-full sm:w-auto">
+              <input
+                type="email"
+                placeholder="your.email@company.com"
+                value={leadEmail}
+                onChange={(e) => {
+                  setLeadEmail(e.target.value);
+                  if (leadStatus) setLeadStatus(null);
+                }}
+                className="bg-radar-card border border-purple-500/30 rounded-lg px-3 py-1.5 text-xs text-white placeholder-radar-textSubtle outline-none focus:border-purple-400 min-w-[200px]"
+              />
+              <button
+                type="submit"
+                disabled={isSubmittingLead}
+                className="px-3 py-1.5 rounded-lg bg-purple-600 hover:bg-purple-500 text-white font-medium text-xs flex items-center gap-1.5 transition-colors disabled:opacity-50 shrink-0 shadow-sm"
+              >
+                {isSubmittingLead ? 'Sending...' : (
+                  <>
+                    <Send className="w-3 h-3" />
+                    <span>Send Report</span>
+                  </>
+                )}
+              </button>
+            </form>
+          </div>
+          {leadStatus && (
+            <div className={`mt-2 text-[11px] font-medium flex items-center gap-1.5 ${leadStatus.success ? 'text-emerald-400' : 'text-rose-400'}`}>
+              {leadStatus.success && <CheckCircle2 className="w-3.5 h-3.5" />}
+              <span>{leadStatus.message}</span>
+            </div>
+          )}
         </div>
 
         {/* Search Bar */}

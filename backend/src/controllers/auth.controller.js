@@ -97,9 +97,13 @@ export const authController = {
    * GET /api/auth/me
    */
   async me(req, res) {
+    const isGuest = req.user?.email === 'guest.demo@reporadar.io';
     return res.status(200).json({
       success: true,
-      user: req.user
+      user: {
+        ...req.user,
+        isGuest
+      }
     });
   },
 
@@ -130,7 +134,64 @@ export const authController = {
           id: user._id || user.id,
           name: user.name,
           email: user.email,
+          isGuest: true,
           pinnedRepositories: user.pinnedRepositories || []
+        }
+      });
+    } catch (err) {
+      next(err);
+    }
+  },
+
+  /**
+   * POST /api/auth/claim
+   * Claim account and upgrade from guest session, transferring saved/pinned repos
+   */
+  async claim(req, res, next) {
+    try {
+      const { name, email, password, pinnedRepositories } = req.body;
+
+      if (!name || !name.trim()) {
+        return res.status(400).json({ success: false, message: 'Full name is required.' });
+      }
+
+      if (!email || !email.trim()) {
+        return res.status(400).json({ success: false, message: 'Email address is required.' });
+      }
+
+      const emailRegex = /^\S+@\S+\.\S+$/;
+      if (!emailRegex.test(email.trim())) {
+        return res.status(400).json({ success: false, message: 'Please provide a valid email address.' });
+      }
+
+      if (!password || password.length < 6) {
+        return res.status(400).json({ success: false, message: 'Password must be at least 6 characters long.' });
+      }
+
+      const existing = await User.findOne({ email: email.trim() });
+      if (existing) {
+        return res.status(409).json({ success: false, message: 'An account with this email already exists.' });
+      }
+
+      const user = await User.create({
+        name: name.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+        pinnedRepositories: Array.isArray(pinnedRepositories) ? pinnedRepositories : []
+      });
+
+      const token = generateToken(user._id || user.id);
+
+      return res.status(201).json({
+        success: true,
+        message: 'Account claimed successfully and repositories saved!',
+        token,
+        user: {
+          id: user._id || user.id,
+          name: user.name,
+          email: user.email,
+          pinnedRepositories: user.pinnedRepositories || [],
+          isGuest: false
         }
       });
     } catch (err) {

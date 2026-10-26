@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { Button } from './common/Button';
+import { ClaimAccountModal } from './ClaimAccountModal';
 
 /**
  * Responsive frosted glassmorphism navigation bar with badges and profile dropdown menu
@@ -23,8 +24,9 @@ import { Button } from './common/Button';
 export function Navbar() {
   const location = useLocation();
   const navigate = useNavigate();
-  const { user, isAuthenticated, logout } = useAuth();
+  const { user, isAuthenticated, isGuest, logout } = useAuth();
   const [isProfileOpen, setIsProfileOpen] = useState(false);
+  const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
   const profileMenuRef = useRef(null);
 
   const navLinks = [
@@ -55,8 +57,32 @@ export function Navbar() {
   };
 
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-radar-border bg-radar-bg/90 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+    <>
+      {isGuest && (
+        <div className="bg-gradient-to-r from-amber-500/20 via-indigo-600/20 to-purple-600/20 border-b border-amber-500/30 px-4 py-1.5 text-xs text-amber-200">
+          <div className="max-w-7xl mx-auto w-full flex items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <span className="flex h-2 w-2 relative">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              </span>
+              <span className="truncate">
+                <strong className="text-white font-semibold">⚡ Demo Guest Session:</strong> You are exploring anonymously. Claim your free account to save your repositories & preferences!
+              </span>
+            </div>
+            <button
+              onClick={() => setIsClaimModalOpen(true)}
+              className="px-3 py-1 rounded-lg bg-amber-500 text-slate-950 font-bold hover:bg-amber-400 transition-colors shadow-sm shrink-0 text-xs flex items-center gap-1.5"
+            >
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Claim Free Account</span>
+            </button>
+          </div>
+        </div>
+      )}
+
+      <header className="sticky top-0 z-40 w-full border-b border-radar-border bg-radar-bg/90 backdrop-blur-md">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
         {/* Brand */}
         <Link to="/" className="flex items-center gap-2.5 group">
           <div className="p-2 bg-indigo-600/20 text-indigo-400 rounded-lg border border-indigo-500/30 group-hover:border-indigo-500/60 group-hover:shadow-glow-primary transition-all duration-300">
@@ -141,6 +167,20 @@ export function Navbar() {
 
                   {/* Menu Items */}
                   <div className="space-y-0.5">
+                    {isGuest && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsProfileOpen(false);
+                          setIsClaimModalOpen(true);
+                        }}
+                        className="w-full mb-1 flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-500/15 text-amber-300 hover:bg-amber-500/25 border border-amber-500/30 transition-colors font-medium text-left"
+                      >
+                        <Sparkles className="w-4 h-4 text-amber-400 shrink-0" />
+                        <span>Claim Account & Save Repos</span>
+                      </button>
+                    )}
+
                     <Link
                       to="/settings"
                       onClick={() => setIsProfileOpen(false)}
@@ -208,6 +248,11 @@ export function Navbar() {
         </nav>
       </div>
     </header>
+    <ClaimAccountModal
+      isOpen={isClaimModalOpen}
+      onClose={() => setIsClaimModalOpen(false)}
+    />
+  </>
   );
 }
 

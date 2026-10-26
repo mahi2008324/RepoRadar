@@ -175,5 +175,42 @@ describe('Authentication API Endpoints', () => {
     assert.ok(data.token);
     assert.strictEqual(data.user.email, 'guest.demo@reporadar.io');
     assert.strictEqual(data.user.name, 'Demo Guest');
+    assert.strictEqual(data.user.isGuest, true);
+  });
+
+  it('POST /api/auth/claim should allow a guest user to claim account and preserve pinned repos', async () => {
+    const claimRes = await fetch(`${baseUrl}/api/auth/claim`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        name: 'Converted User',
+        email: `converted.${Date.now()}@example.com`,
+        password: 'SecurePassword123!',
+        pinnedRepositories: ['repo_pinned_123']
+      })
+    });
+    assert.strictEqual(claimRes.status, 201);
+    const claimData = await claimRes.json();
+    assert.strictEqual(claimData.success, true);
+    assert.ok(claimData.token);
+    assert.strictEqual(claimData.user.isGuest, false);
+    assert.ok(claimData.user.pinnedRepositories.includes('repo_pinned_123'));
+  });
+
+  it('POST /api/leads/report should capture user lead email for report delivery', async () => {
+    const leadRes = await fetch(`${baseUrl}/api/leads/report`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        email: 'lead.architect@company.com',
+        repositoryName: 'facebook/react',
+        reportType: 'dead-code-audit',
+        metadata: { orphanCount: 3, wastedLoc: 150 }
+      })
+    });
+    assert.strictEqual(leadRes.status, 201);
+    const leadData = await leadRes.json();
+    assert.strictEqual(leadData.success, true);
+    assert.strictEqual(leadData.lead.email, 'lead.architect@company.com');
   });
 });

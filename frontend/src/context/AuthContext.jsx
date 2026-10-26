@@ -75,6 +75,22 @@ export function AuthProvider({ children }) {
     return res;
   };
 
+  const claimAccount = async (name, email, password) => {
+    const res = await api.post('/auth/claim', {
+      name,
+      email,
+      password,
+      pinnedRepositories: user?.pinnedRepositories || []
+    });
+    if (res.success && res.token && res.user) {
+      setToken(res.token);
+      setUser(res.user);
+      localStorage.setItem('reporadar_auth_token', res.token);
+      localStorage.setItem('reporadar_user', JSON.stringify(res.user));
+    }
+    return res;
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
@@ -113,14 +129,18 @@ export function AuthProvider({ children }) {
     return user.pinnedRepositories.includes(repoId);
   };
 
+  const isGuest = Boolean(user && (user.isGuest || user.email === 'guest.demo@reporadar.io'));
+
   const value = {
     user,
     token,
     isAuthenticated: Boolean(token && user),
+    isGuest,
     loading,
     login,
     register,
     loginAsGuest,
+    claimAccount,
     logout,
     pinnedRepos: user?.pinnedRepositories || [],
     togglePin,

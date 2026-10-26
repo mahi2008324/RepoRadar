@@ -64,7 +64,7 @@ class MemoryUserStore {
     return this.users.get(id) || null;
   }
 
-  async create({ name, email, password }) {
+  async create({ name, email, password, pinnedRepositories = [] }) {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
     const id = 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
@@ -75,7 +75,7 @@ class MemoryUserStore {
       name,
       email: email.toLowerCase(),
       password: hashedPassword,
-      pinnedRepositories: [],
+      pinnedRepositories: Array.isArray(pinnedRepositories) ? [...pinnedRepositories] : [],
       createdAt: new Date(),
       async comparePassword(candidate) {
         return bcrypt.compare(candidate, this.password);
@@ -111,11 +111,11 @@ export const User = {
     return MongooseUserModel.findById(id).select('-password');
   },
 
-  async create({ name, email, password }) {
+  async create({ name, email, password, pinnedRepositories = [] }) {
     if (!isMongooseActive()) {
-      return memoryUserStoreInstance.create({ name, email, password });
+      return memoryUserStoreInstance.create({ name, email, password, pinnedRepositories });
     }
-    return MongooseUserModel.create({ name, email, password });
+    return MongooseUserModel.create({ name, email, password, pinnedRepositories });
   },
 
   async togglePin(userId, repoId) {

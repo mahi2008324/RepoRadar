@@ -24,7 +24,8 @@ import {
   ShieldAlert,
   Scissors,
   Code,
-  Ghost
+  Ghost,
+  Zap
 } from 'lucide-react';
 import { Button } from '../components/common/Button';
 import { calculateHealthScore } from '../utils/healthCalculator';
@@ -36,6 +37,7 @@ import EmbedReadmeModal from '../components/EmbedReadmeModal';
 import LayerBoundaryModal from '../components/LayerBoundaryModal';
 import RefactorSimulatorModal from '../components/RefactorSimulatorModal';
 import DeadCodeHunterModal from '../components/DeadCodeHunterModal';
+import NeonCircuitTracerModal from '../components/NeonCircuitTracerModal';
 
 export function RepositoryOverviewPage() {
   const { repo, refreshRepo } = useOutletContext();
@@ -48,6 +50,7 @@ export function RepositoryOverviewPage() {
   const [isLayerModalOpen, setIsLayerModalOpen] = useState(false);
   const [isRefactorModalOpen, setIsRefactorModalOpen] = useState(false);
   const [isDeadCodeModalOpen, setIsDeadCodeModalOpen] = useState(false);
+  const [isCircuitTracerOpen, setIsCircuitTracerOpen] = useState(false);
 
   if (!repo) return null;
 
@@ -193,6 +196,17 @@ export function RepositoryOverviewPage() {
               onClick={() => setIsDeadCodeModalOpen(true)}
             >
               Dead Code Hunter
+            </Button>
+
+            {/* Feature: Neon Circuit Live Request Tracer */}
+            <Button
+              variant="outline"
+              size="sm"
+              leftIcon={<Zap className="w-4 h-4 text-cyan-400 animate-pulse" />}
+              onClick={() => setIsCircuitTracerOpen(true)}
+              className="border-cyan-500/40 text-cyan-300 hover:bg-cyan-500/10 shadow-[0_0_12px_rgba(6,182,212,0.15)] font-semibold"
+            >
+              Live Circuit Tracer
             </Button>
 
             {/* Compare with another repo */}
@@ -440,6 +454,13 @@ export function RepositoryOverviewPage() {
       <DeadCodeHunterModal
         isOpen={isDeadCodeModalOpen}
         onClose={() => setIsDeadCodeModalOpen(false)}
+        repository={repo}
+      />
+
+      {/* Neon Circuit Live Request Tracer Modal */}
+      <NeonCircuitTracerModal
+        isOpen={isCircuitTracerOpen}
+        onClose={() => setIsCircuitTracerOpen(false)}
         repository={repo}
       />
     </div>

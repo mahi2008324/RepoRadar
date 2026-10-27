@@ -30,7 +30,7 @@ RepoRadar transforms any public GitHub repository into an interactive, multi-dim
 - **Instant Guest / Demo Access**: 1-click test-drive mode granting full platform access without sign-up or email credentials.
 - **Dead Code & Orphan File Hunter**: Detects unreferenced internal files with 0 incoming imports (excluding entrypoints, configs, tests, routes), calculates wasted LOC and bundle bloat, and provides one-click cleanup checklists.
 - **Interactive 3D Code City**: Visualizes repository architecture as an interactive 3D procedural skyline where building heights map to file LOC and colors represent coupling and complexity.
-- **Architectural Onboarding Tour**: Automated guided walkthrough highlighting central architectural hubs, entrypoints, isolated modules, and circular dependency risks.
+- **Neon Circuit: Live Request & Data-Flow Tracer**: Simulates real-time in-flight HTTP request propagation across the concrete AST dependency topology. Features a PCB motherboard design with glowing chip pins, live payload telemetry inspection, audio frequency synthesis, and step-by-step playback controls.
 - **Production-Ready Architecture**: Centralized error handling, input validation with SSRF protection, rate limiting, and responsive dark developer theme.
 
 ---

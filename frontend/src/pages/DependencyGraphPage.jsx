@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useOutletContext, useSearchParams } from 'react-router-dom';
-import { Layers, Building2, Sparkles } from 'lucide-react';
+import { Layers, Building2, Sparkles, Zap } from 'lucide-react';
 import { DependencyGraph } from '../components/graph/DependencyGraph';
 import CodeCity3D from '../components/CodeCity3D';
+import NeonCircuitTracerModal from '../components/NeonCircuitTracerModal';
 import { repositoryService } from '../services/repositoryService';
 import { Skeleton } from '../components/common/Skeleton';
 import { ErrorState } from '../components/common/ErrorState';
@@ -15,6 +16,7 @@ export function DependencyGraphPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [viewMode, setViewMode] = useState('2d'); // '2d' | '3d'
+  const [isCircuitModalOpen, setIsCircuitModalOpen] = useState(false);
 
   const initialSelect = searchParams.get('select');
 
@@ -83,6 +85,15 @@ export function DependencyGraphPage() {
               </span>
             </button>
           </div>
+
+          {/* Neon Circuit Live Request Tracer Button */}
+          <button
+            onClick={() => setIsCircuitModalOpen(true)}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-cyan-500/10 hover:bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 shadow-[0_0_12px_rgba(6,182,212,0.15)] transition-all ml-1"
+          >
+            <Zap className="w-3.5 h-3.5 text-cyan-400 animate-pulse" />
+            <span>⚡ Live Request Circuit</span>
+          </button>
         </div>
 
         <div className="text-[11px] font-mono text-radar-textSubtle hidden sm:flex items-center gap-3">
@@ -108,6 +119,13 @@ export function DependencyGraphPage() {
           />
         )}
       </div>
+
+      {/* Neon Circuit Live Request Tracer Modal */}
+      <NeonCircuitTracerModal
+        isOpen={isCircuitModalOpen}
+        onClose={() => setIsCircuitModalOpen(false)}
+        repository={repo}
+      />
     </div>
   );
 }

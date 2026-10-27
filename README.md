@@ -1,6 +1,17 @@
 # RepoRadar 📡
 > **Turn any GitHub repository into an interactive map of its codebase.**
 
+[![Live Web App](https://img.shields.io/badge/Live_App-repo--radar--three.vercel.app-6366f1?style=for-the-badge&logo=vercel&logoColor=white)](https://repo-radar-three.vercel.app/)
+[![Watch Demo Video](https://img.shields.io/badge/Demo_Video-Google_Drive-34a853?style=for-the-badge&logo=google-drive&logoColor=white)](https://drive.google.com/file/d/1apCWEb9M5nQhP4yZ5IOjXr15k6eYpkv4/view?usp=sharing)
+
+---
+
+## 🎬 Video Demo & Walkthrough
+📺 **Watch the full project walkthrough and live feature demonstration:**  
+👉 **[Click Here to Watch the Video Demo on Google Drive](https://drive.google.com/file/d/1apCWEb9M5nQhP4yZ5IOjXr15k6eYpkv4/view?usp=sharing)**
+
+---
+
 ## 🎯 Problem Statement
 When developers onboard onto unfamiliar open-source projects or legacy enterprise codebases, understanding the architectural flow takes days of tedious manual inspection. Flat file trees and simple text search fail to answer critical software engineering questions:
 - What does this codebase actually contain and which files are heavily coupled?

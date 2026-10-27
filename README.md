@@ -338,49 +338,6 @@ Launches both the Express API server on `http://localhost:5000` and the Vite Rea
 
 ---
 
-## 📋 End-Term Project Submission Details
-
-Use the following information when completing the [Official Submission Form](https://forms.gle/sBy4sfqyiRG2Zpom9):
-
-```text
-Project Name: RepoRadar
-
-Student Name: [Your Name]
-
-Problem Statement: Understanding unfamiliar, complex open-source or company codebases requires days of tedious manual inspection. Flat file trees and text search cannot reveal architectural coupling, high-frequency dependencies, transitive blast radius impact, or hidden circular dependency loops.
-
-GitHub Repository: [Your GitHub Repository URL]
-
-Deployed Application / Build: [Your Deployed Vercel URL]
-
-Demo Video: [Link to 3-5 minute demo video on YouTube / Google Drive / Loom]
-
-Tech Stack: React 19, Vite, React Router, Tailwind CSS, React Flow (@xyflow/react), Node.js, Express.js, Babel AST Parser (@babel/parser, @babel/traverse), MongoDB Atlas, Mongoose, JWT, bcryptjs
-
-Major Features:
-1. Real AST Source Import Analysis (ESM, CJS, TypeScript, JSX)
-2. Interactive Directed Codebase Graph with Hierarchical Layering
-3. Transitive Blast Radius Impact Analysis (ripple effect calculator)
-4. DFS Directed Cycle Detection & Disconnected File Auditor
-5. Three-Panel Code Explorer with Syntax Highlighting and AST Inspector
-6. JWT User Authentication & Platform Analytics Dashboard
-```
-
----
-
-## 🎬 3 to 5 Minute Demo Presentation Script
-
-For recording your demonstration video:
-
-- **Segment 1 (0:00 – 0:40) Introduction & Problem**: Open `http://localhost:5173/`, introduce RepoRadar, explain challenges with understanding large unfamiliar codebases.
-- **Segment 2 (0:40 – 1:20) Analysis Pipeline**: Enter `https://github.com/expressjs/express`, click Scan, explain AST parsing, filtering, and cycle detection.
-- **Segment 3 (1:20 – 2:00) Overview & Health**: Walk through analyzed files (140), internal edges (74), external packages (54), and directory statistics.
-- **Segment 4 (2:00 – 2:45) Three-Panel Code Explorer**: Select `lib/express.js`, show syntax highlighting, line numbers, and click-to-navigate dependencies.
-- **Segment 5 (2:45 – 3:30) Interactive Directed Graph**: Explore React Flow canvas, node selection, edge arrows (`A -> B` means `A` imports `B`), and mini-map.
-- **Segment 6 (3:30 – 4:10) Blast Radius & Metrics**: Demonstrate ripple-effect calculator on `lib/express.js` (26 affected files), cycles, and ranking tables.
-- **Segment 7 (4:10 – 4:45) Auth, Tests & Persistence**: Show Login/Register, Dashboard saved repositories, and 35 passing automated tests.
-
----
 
 ## 📄 License
 MIT License. Built as an open-source developer productivity tool.

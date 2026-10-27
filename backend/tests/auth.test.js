@@ -213,4 +213,23 @@ describe('Authentication API Endpoints', () => {
     assert.strictEqual(leadData.success, true);
     assert.strictEqual(leadData.lead.email, 'lead.architect@company.com');
   });
+
+  it('GET /api/auth/github/url should return configuration status', async () => {
+    const res = await fetch(`${baseUrl}/api/auth/github/url`);
+    assert.strictEqual(res.status, 200);
+    const data = await res.json();
+    assert.strictEqual(data.success, true);
+    assert.ok(typeof data.configured === 'boolean');
+  });
+
+  it('POST /api/auth/github/callback should reject empty authorization code', async () => {
+    const res = await fetch(`${baseUrl}/api/auth/github/callback`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({})
+    });
+    assert.strictEqual(res.status, 400);
+    const data = await res.json();
+    assert.strictEqual(data.success, false);
+  });
 });

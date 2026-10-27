@@ -91,6 +91,22 @@ export function AuthProvider({ children }) {
     return res;
   };
 
+  const getGitHubAuthUrl = async (redirectUri) => {
+    const query = redirectUri ? `?redirectUri=${encodeURIComponent(redirectUri)}` : '';
+    return api.get(`/auth/github/url${query}`);
+  };
+
+  const loginWithGitHub = async (code) => {
+    const res = await api.post('/auth/github/callback', { code });
+    if (res.success && res.token && res.user) {
+      setToken(res.token);
+      setUser(res.user);
+      localStorage.setItem('reporadar_auth_token', res.token);
+      localStorage.setItem('reporadar_user', JSON.stringify(res.user));
+    }
+    return res;
+  };
+
   const logout = () => {
     setToken(null);
     setUser(null);
@@ -141,6 +157,8 @@ export function AuthProvider({ children }) {
     register,
     loginAsGuest,
     claimAccount,
+    getGitHubAuthUrl,
+    loginWithGitHub,
     logout,
     pinnedRepos: user?.pinnedRepositories || [],
     togglePin,

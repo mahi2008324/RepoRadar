@@ -18,6 +18,7 @@ import { DependencyGraph } from './pages/DependencyGraph';
 import { DependencyAnalysis } from './pages/DependencyAnalysis';
 import { Compare } from './pages/Compare';
 import { NotFound } from './pages/NotFound';
+import GitHubCallbackPage from './pages/GitHubCallbackPage';
 
 export default function App() {
   return (
@@ -46,6 +47,7 @@ export default function App() {
                 </PublicOnlyRoute>
               }
             />
+            <Route path="/auth/github/callback" element={<GitHubCallbackPage />} />
 
             {/* Protected Routes (Redirects unauthenticated visitors to /login) */}
             <Route

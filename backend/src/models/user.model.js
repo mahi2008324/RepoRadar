@@ -19,8 +19,20 @@ const UserSchema = new mongoose.Schema({
   },
   password: {
     type: String,
-    required: [true, 'Password is required'],
-    minlength: [6, 'Password must be at least 6 characters']
+    required: false
+  },
+  githubId: {
+    type: String,
+    sparse: true
+  },
+  githubUsername: {
+    type: String
+  },
+  avatar: {
+    type: String
+  },
+  githubAccessToken: {
+    type: String
   },
   pinnedRepositories: [{
     type: String
@@ -30,7 +42,7 @@ const UserSchema = new mongoose.Schema({
 });
 
 UserSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
+  if (!this.password || !this.isModified('password')) return next();
   try {
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
@@ -51,11 +63,17 @@ class MemoryUserStore {
     this.users = new Map();
   }
 
-  async findOne({ email }) {
-    if (!email) return null;
-    const lower = email.toLowerCase();
-    for (const user of this.users.values()) {
-      if (user.email === lower) return user;
+  async findOne(query = {}) {
+    if (query.email) {
+      const lower = query.email.toLowerCase();
+      for (const user of this.users.values()) {
+        if (user.email === lower) return user;
+      }
+    }
+    if (query.githubId) {
+      for (const user of this.users.values()) {
+        if (user.githubId === String(query.githubId)) return user;
+      }
     }
     return null;
   }
@@ -64,9 +82,12 @@ class MemoryUserStore {
     return this.users.get(id) || null;
   }
 
-  async create({ name, email, password, pinnedRepositories = [] }) {
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(password, salt);
+  async create({ name, email, password, githubId, githubUsername, avatar, githubAccessToken, pinnedRepositories = [] }) {
+    let hashedPassword = null;
+    if (password) {
+      const salt = await bcrypt.genSalt(10);
+      hashedPassword = await bcrypt.hash(password, salt);
+    }
     const id = 'user_' + Date.now() + '_' + Math.random().toString(36).slice(2, 8);
 
     const newUser = {
@@ -75,9 +96,14 @@ class MemoryUserStore {
       name,
       email: email.toLowerCase(),
       password: hashedPassword,
+      githubId: githubId ? String(githubId) : undefined,
+      githubUsername,
+      avatar,
+      githubAccessToken,
       pinnedRepositories: Array.isArray(pinnedRepositories) ? [...pinnedRepositories] : [],
       createdAt: new Date(),
       async comparePassword(candidate) {
+        if (!this.password) return false;
         return bcrypt.compare(candidate, this.password);
       }
     };
@@ -94,11 +120,14 @@ function isMongooseActive() {
 }
 
 export const User = {
-  async findOne({ email }) {
+  async findOne(query = {}) {
     if (!isMongooseActive()) {
-      return memoryUserStoreInstance.findOne({ email });
+      return memoryUserStoreInstance.findOne(query);
     }
-    return MongooseUserModel.findOne({ email: email.toLowerCase() });
+    const filter = {};
+    if (query.email) filter.email = query.email.toLowerCase();
+    if (query.githubId) filter.githubId = String(query.githubId);
+    return MongooseUserModel.findOne(filter);
   },
 
   async findById(id) {
@@ -111,11 +140,11 @@ export const User = {
     return MongooseUserModel.findById(id).select('-password');
   },
 
-  async create({ name, email, password, pinnedRepositories = [] }) {
+  async create({ name, email, password, githubId, githubUsername, avatar, githubAccessToken, pinnedRepositories = [] }) {
     if (!isMongooseActive()) {
-      return memoryUserStoreInstance.create({ name, email, password, pinnedRepositories });
+      return memoryUserStoreInstance.create({ name, email, password, githubId, githubUsername, avatar, githubAccessToken, pinnedRepositories });
     }
-    return MongooseUserModel.create({ name, email, password, pinnedRepositories });
+    return MongooseUserModel.create({ name, email, password, githubId, githubUsername, avatar, githubAccessToken, pinnedRepositories });
   },
 
   async togglePin(userId, repoId) {
